@@ -1,9 +1,9 @@
 {
-	{ "test_directory"           : "tests" },
-	{ "sample_case_extension"    : "_sample" },
-	{ "corner_case_extension"    : "_corner" },
-	{ "generated_case_extension" : "_generated" },
-	{ "input_file_ending"        : "in" },
-	{ "output_file_ending"       : "out"},
-	{ "writers_directory"        : ".writers"}
+	 "test_directory"           : "tests",
+	 "sample_case_extension"    : "_sample",
+	 "corner_case_extension"    : "_corner",
+	 "generated_case_extension" : "_generated",
+	 "input_file_ending"        : "in",
+	 "output_file_ending"       : "out",
+	 "writers_directory"        : ".writers",
 }

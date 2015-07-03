@@ -46,10 +46,9 @@ def containsDeclaredVariables(jsonContents):
             for key, value in fieldSet.items():
                 for variable in variable_pattern.findall(value):
                     found = False
-                    for possibleVars in jsonContents[variable_field]:
-                        for k,v in possibleVars.items():
-                            if variable == v:
-                                found = True
+                    for k, v in jsonContents[variable_field].items():
+                        if variable == v:
+                            found = True
                     if not found:
                         return False
         return True
