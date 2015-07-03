@@ -1,10 +1,10 @@
 { 
-	"variables" : [
-		{ "filename"                : "{fileName}" },
-		{ "filename_less_extension" : "{fileNameWoExtension}" },
-		{ "directory"               : "{directory}" }
+	"variables" : {
+		"filename"                : "{fileName}",
+		"filename_less_extension" : "{fileNameWoExtension}",
+		"directory"               : "{directory}"
 
-	],
+	},
 
 	"languages" : [
 		{
