@@ -1,0 +1,32 @@
+{ 
+	"variables" : [
+		{ "filename"                : "{fileName}" },
+		{ "filename_less_extension" : "{fileNameWoExtension}" },
+		{ "directory"               : "{directory}" }
+
+	],
+
+	"languages" : [
+		{
+			"language"         : "java",
+			"compileExtension" : "java",
+			"compileCommand"   : "javac {fileName}",
+			"runExtension"     : "class",
+			"runCommand"       : "java -cp {directory} {fileNameWoExtension}"
+		},
+
+		{
+			"language"         : "C++",
+			"compileExtension" : "cpp",
+			"compileCommand"   : "g++ -std=c++11 -o {fileNameWoExtension}.o {fileName}",
+			"runExtension"     : "o",
+			"runCommand"       : "{fileName}"
+		},
+
+		{
+			"language"         : "python",
+			"runExtension"     : "py",
+			"runCommand"       : "python {fileName}"
+		}
+	]
+}
