@@ -80,6 +80,19 @@ def compile_solution(userDirectory, problemFile, skipSample, skipCorner,
             return False
     return True
 
+def run_solution(userDirectory, problemFile, skipSample, skipCorner,
+        languageBlock, outputFile):
+    filenameWithoutExtension = os.path.splitext(problemFile)[0]
+    runCommand = (languageBlock['runCommand']
+            .replace(languages['variables']['filename'], problemFile)
+            .replace(languages['variables']['filename_less_extension'], filenameWithoutExtension)
+            .replace(languages['variables']['directory'], userDirectory))
+    try:
+        check_output(runCommand.split(" "))
+    
+
+
+
     
 def test_solution(problem, user, skipSample, skipCorner):
     # First check to make sure that the user exists
