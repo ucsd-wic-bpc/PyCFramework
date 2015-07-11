@@ -65,6 +65,28 @@ def containsAllRequiredSubfields(jsonContents):
                     return False
     return True
 
+def run_tests():
+    if not fileExists():
+        return False
+
+    with open(LANGUAGES_SETTINGS_FILE) as f:
+        contents = f.read()
+
+    if len(contents) <= 0:
+        return False
+
+    jsonContents = json.loads(contents)
+    if not containsProperFields(jsonContents) or \
+            not containsProperContentsAmounts(jsonContents):
+                return False
+
+    if not containsDeclaredVariables(jsonContents):
+        return False
+
+    if not containsAllRequiredSubfields(jsonContents):
+        return False
+
+    return True
                 
 if __name__ == '__main__':
     assert(fileExists())  # Check to make sure languages file exists
