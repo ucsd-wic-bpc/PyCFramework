@@ -15,6 +15,7 @@ import argparse
 import os
 import json
 import sys
+from subprocess import call
 
 """
 This script tests a user's problem against sample input and corner-case input
@@ -65,6 +66,21 @@ def get_source_extension(languageBlock):
     else:
         return languageBlock['runExtension']
 
+def compile_solution(userDirectory, problemFile, skipSample, skipCorner,
+        languageBlock):
+
+    # Check if the solution needs compiling and compile if it does
+    if 'compileExtension' in languageBlock:
+        filenameWithoutExtension = os.path.splitext(problemFile)[0]
+        compileCommand = (languageBlock['compileCommand']
+                .replace(languages['variables']['filename'], problemFile)
+                .replace(languages['variables']['filename_less_extension'], filenameWithoutExtension)
+                .replace(languages['variables']['directory'], userDirectory))
+        if not call(compileCommand.split(" ")) == 0:
+            return False
+    return True
+
+    
 def test_solution(problem, user, skipSample, skipCorner):
     # First check to make sure that the user exists
     userPath = os.path.dirname(os.path.abspath(__file__)) + "/" + user
@@ -75,12 +91,17 @@ def test_solution(problem, user, skipSample, skipCorner):
         return False
 
     # Now check to make sure that the user has source code for the problem
+    numSolutions = 0
     for possibleSolution in os.listdir(userPath):
         for languageBlock in languages['languages']:
             if possibleSolution == (definitions['solution_naming']
                                     .replace('{problem}', problem) + "." + 
                                     get_source_extension(languageBlock)):
-                print(possibleSolution)
+                numSolutions += 1
+                compile_solution(userPath, possibleSolution, skipSample,
+                        skipCorner, languageBlock)
+
+
 
         
 test_solution(args.problem[0], args.name[0], args.skipsample, args.skipcorner)
