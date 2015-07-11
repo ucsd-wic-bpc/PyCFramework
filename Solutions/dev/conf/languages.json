@@ -10,7 +10,7 @@
 		{
 			"language"         : "java",
 			"compileExtension" : "java",
-			"compileCommand"   : "javac {fileName}",
+			"compileCommand"   : "javac {directory}/{fileName}",
 			"runExtension"     : "class",
 			"runCommand"       : "java -cp {directory} {fileNameWoExtension}"
 		},
@@ -18,9 +18,9 @@
 		{
 			"language"         : "C++",
 			"compileExtension" : "cpp",
-			"compileCommand"   : "g++ -std=c++11 -o {fileNameWoExtension}.o {fileName}",
+			"compileCommand"   : "g++ -std=c++11 -o {directory}/{fileNameWoExtension}.o {directory}/{fileName}",
 			"runExtension"     : "o",
-			"runCommand"       : "{fileName}"
+			"runCommand"       : "{directory}/{fileName}"
 		},
 
 		{
