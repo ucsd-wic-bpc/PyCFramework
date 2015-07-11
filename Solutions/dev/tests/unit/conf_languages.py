@@ -14,7 +14,7 @@ import re
 # Settings
 LANGUAGES_SETTINGS_FILE = os.path.dirname(os.path.abspath(__file__)) + "/../../conf/languages.json"
 proper_fields = ['variables', 'languages']
-required_subfields = {'languages' : ['runCommand', 'runExtension']}
+required_subfields = {'languages' : ['runCommand', 'runExtension', 'runArguments']}
 proper_fields_min_lens = [0, 1]
 variable_field = 'variables'
 variable_pattern = re.compile("{[^{^}]*}")
@@ -44,13 +44,23 @@ def containsDeclaredVariables(jsonContents):
 
         for fieldSet in jsonContents[field]:
             for key, value in fieldSet.items():
-                for variable in variable_pattern.findall(value):
-                    found = False
-                    for k, v in jsonContents[variable_field].items():
-                        if variable == v:
-                            found = True
-                    if not found:
-                        return False
+                if isinstance(value, list):
+                    for item in value:
+                        for variable in variable_pattern.findall(item):
+                            found = False
+                            for k, v in jsonContents[variable_field].items():
+                                if variable == v:
+                                    found = True
+                            if not found:
+                                return False
+                else:
+                    for variable in variable_pattern.findall(value):
+                        found = False
+                        for k, v in jsonContents[variable_field].items():
+                            if variable == v:
+                                found = True
+                        if not found:
+                            return False
         return True
 
 def containsAllRequiredSubfields(jsonContents):
