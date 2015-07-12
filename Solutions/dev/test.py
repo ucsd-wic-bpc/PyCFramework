@@ -15,7 +15,7 @@ import argparse
 import os
 import json
 import sys
-from subprocess import call
+import subprocess
 
 """
 This script tests a user's problem against sample input and corner-case input
@@ -66,32 +66,42 @@ def get_source_extension(languageBlock):
     else:
         return languageBlock['runExtension']
 
-def compile_solution(userDirectory, problemFile, skipSample, skipCorner,
-        languageBlock):
+def replace_language_vars_individual(string, problemFile, directory):
+    variables = languages['variables']
+    filenameWithoutExtension = os.path.splitext(problemFile)[0]
+    return (string.replace(variables['filename'], problemFile)
+            .replace(variables['filename_less_extension'], filenameWithoutExtension)
+            .replace(variables['directory'], directory))
 
+def replace_language_vars(languageBlock, problemFile, directory):
+    for key, languageItem in languageBlock.items():
+        if isinstance(languageItem, list):
+            for i in range(0, len(languageItem)):
+                languageItem[i] = replace_language_vars_individual(languageItem[i], problemFile, directory)
+        else:
+            languageBlock[key] = replace_language_vars_individual(languageItem, problemFile, directory)
+    return languageBlock
+                
+
+def compile_solution(convertedLanguageBlock):
     # Check if the solution needs compiling and compile if it does
-    if 'compileExtension' in languageBlock:
-        filenameWithoutExtension = os.path.splitext(problemFile)[0]
-        compileCommand = (languageBlock['compileCommand']
-                .replace(languages['variables']['filename'], problemFile)
-                .replace(languages['variables']['filename_less_extension'], filenameWithoutExtension)
-                .replace(languages['variables']['directory'], userDirectory))
-        if not call(compileCommand.split(" ")) == 0:
+    if 'compileExtension' in convertedLanguageBlock:
+        compileCommand = []
+        compileCommand.append(convertedLanguageBlock['compileCommand'])
+        compileCommand.extend(convertedLanguageBlock['compileArguments'])
+        if not subprocess.call(compileCommand) == 0:
             return False
     return True
 
-def run_solution(userDirectory, problemFile, skipSample, skipCorner,
-        languageBlock, outputFile):
-    filenameWithoutExtension = os.path.splitext(problemFile)[0]
-    runCommand = (languageBlock['runCommand']
-            .replace(languages['variables']['filename'], problemFile)
-            .replace(languages['variables']['filename_less_extension'], filenameWithoutExtension)
-            .replace(languages['variables']['directory'], userDirectory))
+def run_solution(skipSample, skipCorner, convertedLanguageBlock, outputFile):
+    runCommand = []
+    runCommand.append(convertedLanguageBlock['runCommand'])
+    runCommand.extend(convertedLanguageBlock['runArguments'])
     try:
-        check_output(runCommand.split(" "))
+        print(subprocess.check_output(runCommand).decode("utf-8"))
+    except subprocess.CalledProcessError:
+        print("err")
     
-
-
 
     
 def test_solution(problem, user, skipSample, skipCorner):
@@ -110,9 +120,10 @@ def test_solution(problem, user, skipSample, skipCorner):
             if possibleSolution == (definitions['solution_naming']
                                     .replace('{problem}', problem) + "." + 
                                     get_source_extension(languageBlock)):
+                convertedLanguageBlock = replace_language_vars(languageBlock, possibleSolution, userPath)
                 numSolutions += 1
-                compile_solution(userPath, possibleSolution, skipSample,
-                        skipCorner, languageBlock)
+                if compile_solution(convertedLanguageBlock):
+                    run_solution(skipSample, skipCorner, convertedLanguageBlock, userPath + "/output")
 
 
 
