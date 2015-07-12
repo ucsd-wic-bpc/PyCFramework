@@ -93,15 +93,25 @@ def compile_solution(convertedLanguageBlock):
             return False
     return True
 
-def run_solution(skipSample, skipCorner, convertedLanguageBlock, outputDirectory,
-        inputFiles):
+def run_solution(convertedLanguageBlock, outputDirectory, inputFiles):
     runCommand = []
     runCommand.append(convertedLanguageBlock['runCommand'])
     runCommand.extend(convertedLanguageBlock['runArguments'])
-    try:
-        print(subprocess.check_output(runCommand).decode("utf-8"))
-    except subprocess.CalledProcessError:
-        print("err")
+    for inputFile in inputFiles:
+        inputObject = open(inputFile, 'r')
+        outputFile = inputFile.replace('.' + definitions['input_file_ending'],
+                '.' + definitions['output_file_ending'])
+        try:
+            output = subprocess.check_output(runCommand, stdin=inputObject).decode("utf-8")
+            inputObject.close()
+            with open(outputFile) as outputObject:
+                outputFileContents = outputObject.read()
+            if not outputFileContents == output:
+                print("OH NOES")
+            print(output)
+        except subprocess.CalledProcessError:
+            inputObject.close()
+            print("err")
     
 
     
@@ -138,7 +148,7 @@ def test_solution(problem, user, skipSample, skipCorner):
                 convertedLanguageBlock = replace_language_vars(languageBlock, possibleSolution, userPath)
                 numSolutions += 1
                 if compile_solution(convertedLanguageBlock):
-                    run_solution(skipSample, skipCorner, convertedLanguageBlock, userPath + "/output",
+                    run_solution(convertedLanguageBlock, userPath + "/output",
                             inputFileList)
 
 
