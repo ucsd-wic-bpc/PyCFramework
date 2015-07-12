@@ -93,7 +93,8 @@ def compile_solution(convertedLanguageBlock):
             return False
     return True
 
-def run_solution(skipSample, skipCorner, convertedLanguageBlock, outputFile):
+def run_solution(skipSample, skipCorner, convertedLanguageBlock, outputDirectory,
+        inputFiles):
     runCommand = []
     runCommand.append(convertedLanguageBlock['runCommand'])
     runCommand.extend(convertedLanguageBlock['runArguments'])
@@ -108,10 +109,24 @@ def test_solution(problem, user, skipSample, skipCorner):
     # First check to make sure that the user exists
     userPath = os.path.dirname(os.path.abspath(__file__)) + "/" + user
     writersPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['writers_directory']
+    testPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['test_directory']
+    problemString = definitions['solution_naming'].replace('{problem}', problem)
 
     if not os.path.isdir(userPath) or not os.path.islink(writersPath + "/" + user):
         print("{} is not a valid user".format(user))
         return False
+
+    inputFileList = []
+    sampleFile = (testPath + "/" + problemString + definitions['sample_case_extension']
+                + '.' + definitions['input_file_ending'])
+    cornerFile = (testPath + "/" + problemString + definitions['corner_case_extension']
+                + '.' + definitions['input_file_ending'])
+
+    if not skipSample and os.path.isfile(sampleFile):
+        inputFileList.append(sampleFile)
+    if not skipCorner and os.path.isfile(cornerFile):
+        inputFileList.append(cornerFile)
+
 
     # Now check to make sure that the user has source code for the problem
     numSolutions = 0
@@ -123,8 +138,8 @@ def test_solution(problem, user, skipSample, skipCorner):
                 convertedLanguageBlock = replace_language_vars(languageBlock, possibleSolution, userPath)
                 numSolutions += 1
                 if compile_solution(convertedLanguageBlock):
-                    run_solution(skipSample, skipCorner, convertedLanguageBlock, userPath + "/output")
-
+                    run_solution(skipSample, skipCorner, convertedLanguageBlock, userPath + "/output",
+                            inputFileList)
 
 
         
