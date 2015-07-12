@@ -111,8 +111,6 @@ def run_solution(convertedLanguageBlock, outputDirectory, inputFiles):
     runCommand = []
     runCommand.append(convertedLanguageBlock['runCommand'])
     runCommand.extend(convertedLanguageBlock['runArguments'])
-    passingFiles = []
-    failingFiles = []
     results = RunResults([])
     for inputFile in inputFiles:
         inputObject = open(inputFile, 'r')
