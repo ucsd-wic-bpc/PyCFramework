@@ -8,13 +8,17 @@
 
 	"languages" : [
 		{
-			"language"         : "java",
+			"language"         : "Java",
 			"compileExtension" : "java",
 			"compileCommand"   : "javac",
 			"compileArguments" : [ "{directory}/{fileName}" ],
 			"runExtension"     : "class",
 			"runCommand"       : "java",
-			"runArguments"     : [ "-cp {directory} {fileNameWoExtension}" ]
+			"runArguments"     : [ 
+				 	       "-cp", 
+				     	       "{directory}",
+					       "{fileNameWoExtension}" 
+					     ]
 
 		},
 
@@ -24,17 +28,18 @@
 			"compileCommand"   : "g++",
 			"compileArguments" : [  
 						"-std=c++11", 
-						"-o {directory}/{fileNameWoExtension}.o",
+						"-o", 
+						"{directory}/{fileNameWoExtension}.o",
 						"{directory}/{fileName}"
 					     ],
 						
 			"runExtension"     : "o",
-			"runCommand"       : "{directory}/{fileName}",
+			"runCommand"       : "{directory}/{fileNameWoExtension}.o",
 			"runArguments"     : []
 		},
 
 		{
-			"language"         : "python",
+			"language"         : "Python",
 			"runExtension"     : "py",
 			"runCommand"       : "python",
 			"runArguments"     : [ "{directory}/{fileName}" ]
