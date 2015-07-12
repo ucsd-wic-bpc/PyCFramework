@@ -60,6 +60,20 @@ with open(LANGUAGES_FILE) as f:
 definitions = json.loads(definitionContents)
 languages = json.loads(languageContents)
 
+class RunResults:
+    def __init__(self, runs):
+        self.runs = runs
+
+    def add_run(self, run):
+        self.runs.append(run)
+
+
+class Run:
+    def __init__(self, userOutput, correctOutput, inputFile):
+        self.userOutput = userOutput
+        self.correctOutput = correctOutput
+        self.inputFile = inputFile
+
 def get_source_extension(languageBlock):
     if 'compileExtension' in languageBlock:
         return languageBlock['compileExtension']
@@ -97,6 +111,9 @@ def run_solution(convertedLanguageBlock, outputDirectory, inputFiles):
     runCommand = []
     runCommand.append(convertedLanguageBlock['runCommand'])
     runCommand.extend(convertedLanguageBlock['runArguments'])
+    passingFiles = []
+    failingFiles = []
+    results = RunResults([])
     for inputFile in inputFiles:
         inputObject = open(inputFile, 'r')
         outputFile = inputFile.replace('.' + definitions['input_file_ending'],
@@ -106,12 +123,13 @@ def run_solution(convertedLanguageBlock, outputDirectory, inputFiles):
             inputObject.close()
             with open(outputFile) as outputObject:
                 outputFileContents = outputObject.read()
-            if not outputFileContents == output:
-                print("OH NOES")
-            print(output)
+            results.add_run(Run(output, outputFileContents, inputFile))
+                
         except subprocess.CalledProcessError:
             inputObject.close()
-            print("err")
+            results.add_run(Run(output, outputFileContents, inputFile))
+
+    return results
     
 
     
@@ -148,8 +166,17 @@ def test_solution(problem, user, skipSample, skipCorner):
                 convertedLanguageBlock = replace_language_vars(languageBlock, possibleSolution, userPath)
                 numSolutions += 1
                 if compile_solution(convertedLanguageBlock):
-                    run_solution(convertedLanguageBlock, userPath + "/output",
-                            inputFileList)
+                    results = run_solution(convertedLanguageBlock, userPath + "/output",
+                                inputFileList)
+                    for run in results.runs:
+                        itemType = "SAMPLE" if run.inputFile == sampleFile else "CORNER"
+                        if not run.userOutput == run.correctOutput:
+                            print(("FAILED {}: {}'s problem {} solution in {}"
+                                .format(itemType, user, problem, convertedLanguageBlock['language'])))
+                        else:
+                            print(("PASSED {}: {}'s problem {} solution in {}"
+                                .format(itemType, user, problem, convertedLanguageBlock['language'])))
+
 
 
         
