@@ -60,6 +60,20 @@ if not os.path.isfile(LANGUAGES_FILE):
     print("Error: Langauges file {} cannot be found.".format(LANGUAGES_FILE))
     sys.exit(1)
 
+# Run validation tests
+if not args.skipvalidation and not conf_languages.run_tests():
+    print(("Validation tests for the languages configuration file failed."
+        " This means that there was an error within your conf/languages.json"
+        " file. Cannot continue"))
+    sys.exit(1)
+if not args.skipvalidation and not conf_definitions.run_tests():
+    print(("Validation tests for the definitions configuration file failed."
+        " This means that there was an error within your conf/definitions.json"
+        " file. Cannot continue"))
+    sys.exit(1)
+
+
+# At this point, the configurations pass validation tests. Load them in
 with open(DEFINITIONS_FILE) as f:
     definitionContents = f.read()
 with open(LANGUAGES_FILE) as f:
@@ -68,6 +82,8 @@ with open(LANGUAGES_FILE) as f:
 definitions = json.loads(definitionContents)
 languages = json.loads(languageContents)
 
+# The RunResults Class keeps track of a group of "runs", which are essentially
+# tests run on a specific problem and specific cases.
 class RunResults:
     def __init__(self, runs):
         self.runs = runs
@@ -75,19 +91,22 @@ class RunResults:
     def add_run(self, run):
         self.runs.append(run)
 
-
+# The run class keeps track of the test that was run, the correct output,
+# and what the user output
 class Run:
     def __init__(self, userOutput, correctOutput, inputFile):
         self.userOutput = userOutput
         self.correctOutput = correctOutput
         self.inputFile = inputFile
 
+# Function returns the extension of the source code file
 def get_source_extension(languageBlock):
     if 'compileExtension' in languageBlock:
         return languageBlock['compileExtension']
     else:
         return languageBlock['runExtension']
 
+# Replaces the variables of a specific language block.
 def replace_language_vars_individual(string, problemFile, directory):
     variables = languages['variables']
     filenameWithoutExtension = os.path.splitext(problemFile)[0]
@@ -95,6 +114,8 @@ def replace_language_vars_individual(string, problemFile, directory):
             .replace(variables['filename_less_extension'], filenameWithoutExtension)
             .replace(variables['directory'], directory))
 
+# Replaces the variables of all language blocks by finding the language blocks
+# and delegating functionality to the above replace_language_vars_individual
 def replace_language_vars(languageBlock, problemFile, directory):
     for key, languageItem in languageBlock.items():
         if isinstance(languageItem, list):
@@ -105,6 +126,7 @@ def replace_language_vars(languageBlock, problemFile, directory):
     return languageBlock
                 
 
+# Compile a solution given its language block with correct paths
 def compile_solution(convertedLanguageBlock):
     # Check if the solution needs compiling and compile if it does
     if 'compileExtension' in convertedLanguageBlock:
@@ -115,6 +137,7 @@ def compile_solution(convertedLanguageBlock):
             return False
     return True
 
+# Run a rolution and return its RunResults.
 def run_solution(convertedLanguageBlock, outputDirectory, inputFiles):
     runCommand = []
     runCommand.append(convertedLanguageBlock['runCommand'])
@@ -138,7 +161,6 @@ def run_solution(convertedLanguageBlock, outputDirectory, inputFiles):
     return results
     
 
-    
 def test_solution(problem, user, skipSample, skipCorner):
     # First check to make sure that the user exists
     userPath = os.path.dirname(os.path.abspath(__file__)) + "/" + user
@@ -150,6 +172,7 @@ def test_solution(problem, user, skipSample, skipCorner):
         print("{} is not a valid user".format(user))
         return False
 
+    # Get all valid input test files
     inputFileList = []
     sampleFile = (testPath + "/" + problemString + definitions['sample_case_extension']
                 + '.' + definitions['input_file_ending'])
@@ -167,6 +190,7 @@ def test_solution(problem, user, skipSample, skipCorner):
 
     # Now check to make sure that the user has source code for the problem
     numSolutions = 0
+    numCorrectSolutions = 0
     for possibleSolution in os.listdir(userPath):
         for languageBlock in languages['languages']:
             if possibleSolution == (definitions['solution_naming']
@@ -182,20 +206,38 @@ def test_solution(problem, user, skipSample, skipCorner):
                         if not run.userOutput == run.correctOutput:
                             print(("FAILED {}: {}'s problem {} solution in {}"
                                 .format(itemType, user, problem, convertedLanguageBlock['language'])))
+                        else: numCorrectSolutions += 1
+                            
     if numSolutions == 0:
         print("{} Does not have problem {}!".format(user, problem))
+        return False
+    elif numCorrectSolutions == numSolutions:
+        return True
+    else:
+        return False
 
-# Run validation tests
-if not args.skipvalidation and not conf_languages.run_tests():
-    print(("Validation tests for the languages configuration file failed."
-        " This means that there was an error within your conf/languages.json"
-        " file. Cannot continue"))
-    sys.exit(1)
-if not args.skipvalidation and not conf_definitions.run_tests():
-    print(("Validation tests for the definitions configuration file failed."
-        " This means that there was an error within your conf/definitions.json"
-        " file. Cannot continue"))
-    sys.exit(1)
+def compare_generated_outputs(problem, users):
+    lastUser = (None, None)
+    for user in users:
+        userPath = os.path.dirname(os.path.abspath(__file__)) + "/" + user
+        problemString = definitions['solution_naming'].replace('{problem}', str(problem))
+        generatedPath = (userPath + "/" + problemString + definitions['generated_case_extension']
+                    + '.' + definitions['output_file_ending'])
+        if not os.path.isfile(generatedPath):
+            output = ""
+        else:
+            with open(generatedPath) as generatedObject:
+                output = generatedObject.read()
+        if lastUser[0] == None:
+            lastUser = (user, output)
+        else:
+            if not output == lastUser[1]:
+                print("FAILED GENERATED: {}'s problem {} doesn't match {}'s"
+                        .format(lastUser[0], problem, user))
+                return False
+            else:
+                lastUser = (user, output)
+    return True
 
 # Now parse the arguments to check for specific options
 problemCount = definitions['problem_count']
@@ -216,5 +258,12 @@ else:
 
 
 for problem in problemsToDo:
+    passingPeople = 0
     for people in args.name:
-        test_solution(problem, people, args.skipsample, args.skipcorner)
+        if test_solution(problem, people, args.skipsample, args.skipcorner): 
+            passingPeople += 1
+
+    if passingPeople == len(args.name):
+        # All people passed. This means that their generated solutions can be compared
+        if compare_generated_outputs(problem, people):
+            # TODO: Copy all resources into finalIO

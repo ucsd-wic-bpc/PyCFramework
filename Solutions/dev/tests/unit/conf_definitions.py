@@ -15,7 +15,7 @@ import re
 DEFINITIONS_SETTINGS_FILE = os.path.dirname(os.path.abspath(__file__)) + "/../../conf/definitions.json"
 proper_fields = ['test_directory' , 'sample_case_extension', 'corner_case_extension',
         'generated_case_extension', 'input_file_ending', 'output_file_ending',
-        'writers_directory', 'solution_naming']
+        'writers_directory', 'solution_naming', 'problem_count', 'finalio_directory']
 required_subfields = {}
 proper_fields_min_lens = []
 
