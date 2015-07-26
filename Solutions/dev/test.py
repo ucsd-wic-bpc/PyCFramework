@@ -153,7 +153,6 @@ def test_solution(problem, user, skipSample, skipCorner):
     if not skipCorner and os.path.isfile(cornerFile):
         inputFileList.append(cornerFile)
 
-
     # Now check to make sure that the user has source code for the problem
     numSolutions = 0
     for possibleSolution in os.listdir(userPath):
@@ -171,6 +170,8 @@ def test_solution(problem, user, skipSample, skipCorner):
                         if not run.userOutput == run.correctOutput:
                             print(("FAILED {}: {}'s problem {} solution in {}"
                                 .format(itemType, user, problem, convertedLanguageBlock['language'])))
+    if numSolutions == 0:
+        print("{} Does not have problem {}!".format(user, problem))
 
 # Now parse the arguments to check for specific options
 problemCount = definitions['problem_count']
@@ -186,6 +187,10 @@ elif '-' in args.problem[0]:
     dashIndex = args.problem[0].index('-')
     for i in range(int(args.problem[0][0:dashIndex]), int(args.problem[0][dashIndex + 1:]) + 1):
         problemsToDo.append(i)
+else:
+    problemsToDo.append(int(args.problem[0]))
+
 
 for problem in problemsToDo:
-    test_solution(problem, args.name[0], args.skipsample, args.skipcorner)
+    for people in args.name:
+        test_solution(problem, people, args.skipsample, args.skipcorner)
