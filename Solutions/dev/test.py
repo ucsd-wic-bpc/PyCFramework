@@ -136,7 +136,7 @@ def test_solution(problem, user, skipSample, skipCorner):
     userPath = os.path.dirname(os.path.abspath(__file__)) + "/" + user
     writersPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['writers_directory']
     testPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['test_directory']
-    problemString = definitions['solution_naming'].replace('{problem}', problem)
+    problemString = definitions['solution_naming'].replace('{problem}', str(problem))
 
     if not os.path.isdir(userPath) or not os.path.islink(writersPath + "/" + user):
         print("{} is not a valid user".format(user))
@@ -159,7 +159,7 @@ def test_solution(problem, user, skipSample, skipCorner):
     for possibleSolution in os.listdir(userPath):
         for languageBlock in languages['languages']:
             if possibleSolution == (definitions['solution_naming']
-                                    .replace('{problem}', problem) + "." + 
+                                    .replace('{problem}', str(problem)) + "." + 
                                     get_source_extension(languageBlock)):
                 convertedLanguageBlock = replace_language_vars(languageBlock, possibleSolution, userPath)
                 numSolutions += 1
@@ -171,11 +171,21 @@ def test_solution(problem, user, skipSample, skipCorner):
                         if not run.userOutput == run.correctOutput:
                             print(("FAILED {}: {}'s problem {} solution in {}"
                                 .format(itemType, user, problem, convertedLanguageBlock['language'])))
-                        else:
-                            print(("PASSED {}: {}'s problem {} solution in {}"
-                                .format(itemType, user, problem, convertedLanguageBlock['language'])))
 
+# Now parse the arguments to check for specific options
+problemCount = definitions['problem_count']
+problemsToDo = []
+if args.problem[0][0] == '+' or args.problem[0][0] == '-':
+        if args.problem[0][0] == '+':
+            for i in range(int(args.problem[0][1:]) + 1, problemCount + 1):
+                problemsToDo.append(i)
+        else:
+            for i in range(1, int(args.problem[0][1:])):
+                problemsToDo.append(i)
+elif '-' in args.problem[0]:
+    dashIndex = args.problem[0].index('-')
+    for i in range(int(args.problem[0][0:dashIndex]), int(args.problem[0][dashIndex + 1:]) + 1):
+        problemsToDo.append(i)
 
-
-        
-test_solution(args.problem[0], args.name[0], args.skipsample, args.skipcorner)
+for problem in problemsToDo:
+    test_solution(problem, args.name[0], args.skipsample, args.skipcorner)

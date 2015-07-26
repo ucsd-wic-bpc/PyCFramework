@@ -6,5 +6,6 @@
 	 "input_file_ending"        : "in",
 	 "output_file_ending"       : "out",
 	 "writers_directory"        : ".writers",
-	 "solution_naming"          : "problem{problem}"
+	 "solution_naming"          : "problem{problem}",
+	 "problem_count"            : 3
 }
