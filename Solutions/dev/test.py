@@ -9,13 +9,21 @@
 #
 # Usage:
 #   $ python test.py <problem> <user>
-#   
+#
+#   <user> is one or more name
+#   <problem> is a single problem number, or a range. Range patterns are:
+#       3      - A single number
+#       +3     - All problems greater than 3
+#       -3     - All problems less than 3
+#       1-3    - All problems within the inclusive range 1-3
 ################################################################################
 import argparse
 import os
 import json
 import sys
 import subprocess
+from tests.unit import conf_languages
+from tests.unit import conf_definitions
 
 """
 This script tests a user's problem against sample input and corner-case input
@@ -28,18 +36,18 @@ LANGUAGES_FILE = os.path.dirname(os.path.abspath(__file__)) + "/conf/languages.j
 # Declare the script arguments
 parser = argparse.ArgumentParser(description=("Tests users' solutions"
                                             "against various inputs"))
-parser.add_argument('problem', metavar='P', nargs=1, 
+parser.add_argument('problem',  nargs=1, 
                     help="The problem of the user's solution that is tested")
-parser.add_argument('name', metavar='N', nargs='+', 
+parser.add_argument('name',  nargs='+', 
                     help="The people whose solutions will be tested")
 parser.add_argument('--skipsample', action='store_true',
                     help="Do not test the user's solution against sample input")
 parser.add_argument('--skipcorner', action='store_true',
                     help=("Do not test the user's solution against"
-                        "corner-case input"))
+                        " corner case input"))
 parser.add_argument('--skipvalidation', action='store_true',
                     help=("Do not validate the properties files before loading"
-                        "them"))
+                        " them"))
 
 # Handle the script arguments
 args = parser.parse_args()
@@ -176,6 +184,18 @@ def test_solution(problem, user, skipSample, skipCorner):
                                 .format(itemType, user, problem, convertedLanguageBlock['language'])))
     if numSolutions == 0:
         print("{} Does not have problem {}!".format(user, problem))
+
+# Run validation tests
+if not args.skipvalidation and not conf_languages.run_tests():
+    print(("Validation tests for the languages configuration file failed."
+        " This means that there was an error within your conf/languages.json"
+        " file. Cannot continue"))
+    sys.exit(1)
+if not args.skipvalidation and not conf_definitions.run_tests():
+    print(("Validation tests for the definitions configuration file failed."
+        " This means that there was an error within your conf/definitions.json"
+        " file. Cannot continue"))
+    sys.exit(1)
 
 # Now parse the arguments to check for specific options
 problemCount = definitions['problem_count']
