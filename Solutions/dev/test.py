@@ -147,11 +147,15 @@ def test_solution(problem, user, skipSample, skipCorner):
                 + '.' + definitions['input_file_ending'])
     cornerFile = (testPath + "/" + problemString + definitions['corner_case_extension']
                 + '.' + definitions['input_file_ending'])
+    generatedFile = (testPath + "/" + problemString + definitions['generated_case_extension']
+                + '.' + definitions['input_file_ending'])
 
     if not skipSample and os.path.isfile(sampleFile):
         inputFileList.append(sampleFile)
     if not skipCorner and os.path.isfile(cornerFile):
         inputFileList.append(cornerFile)
+    if os.path.isfile(generatedFile):
+        inputFileLIst.append(generatedFile)
 
     # Now check to make sure that the user has source code for the problem
     numSolutions = 0
