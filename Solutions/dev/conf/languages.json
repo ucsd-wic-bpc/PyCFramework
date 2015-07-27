@@ -1,11 +1,4 @@
 { 
-	"variables" : {
-		"filename"                : "{fileName}",
-		"filename_less_extension" : "{fileNameWoExtension}",
-		"directory"               : "{directory}"
-
-	},
-
 	"languages" : [
 		{
 			"language"         : "Java",

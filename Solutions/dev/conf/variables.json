@@ -1,0 +1,6 @@
+{
+	"filename" 		  : "{fileName}",
+	"filename_less_extension" : "{fileNameWoExtension}",
+	"directory" 		  : "{directory}",
+	"problem_number" 	  : "{problem}"
+}

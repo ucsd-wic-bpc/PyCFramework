@@ -32,6 +32,7 @@ as well as generates output for generated cases.
 
 DEFINITIONS_FILE = os.path.dirname(os.path.abspath(__file__)) + "/conf/definitions.json"
 LANGUAGES_FILE = os.path.dirname(os.path.abspath(__file__)) + "/conf/languages.json"
+VARIABLES_FILE = os.path.dirname(os.path.abspath(__file__)) + "/conf/variables.json"
 
 # Declare the script arguments
 parser = argparse.ArgumentParser(description=("Tests users' solutions"
@@ -59,6 +60,9 @@ if not os.path.isfile(DEFINITIONS_FILE):
 if not os.path.isfile(LANGUAGES_FILE):
     print("Error: Langauges file {} cannot be found.".format(LANGUAGES_FILE))
     sys.exit(1)
+if not os.path.isfile(VARIABLES_FILE):
+    print("Error: Variables file {} cannot be found".format(VARIABLES_FILE))
+    sys.exit(1)
 
 # Run validation tests
 if not args.skipvalidation and not conf_languages.run_tests():
@@ -71,6 +75,11 @@ if not args.skipvalidation and not conf_definitions.run_tests():
         " This means that there was an error within your conf/definitions.json"
         " file. Cannot continue"))
     sys.exit(1)
+if not args.skipvalidation and not conf_variables.run_tests():
+    print(("Validation tests for the variables configuration file failed."
+        " This means that there was an error within your conf/variables.json"
+        " file. Cannot continue"))
+    sys.exit(1)
 
 
 # At this point, the configurations pass validation tests. Load them in
@@ -78,9 +87,12 @@ with open(DEFINITIONS_FILE) as f:
     definitionContents = f.read()
 with open(LANGUAGES_FILE) as f:
     languageContents = f.read()
+with open(VARIABLES_FILE) as f:
+    variableContents = f.read()
 
 definitions = json.loads(definitionContents)
 languages = json.loads(languageContents)
+variables = json.loads(variableContents)
 
 # The RunResults Class keeps track of a group of "runs", which are essentially
 # tests run on a specific problem and specific cases.
@@ -108,7 +120,6 @@ def get_source_extension(languageBlock):
 
 # Replaces the variables of a specific language block.
 def replace_language_vars_individual(string, problemFile, directory):
-    variables = languages['variables']
     filenameWithoutExtension = os.path.splitext(problemFile)[0]
     return (string.replace(variables['filename'], problemFile)
             .replace(variables['filename_less_extension'], filenameWithoutExtension)
@@ -194,7 +205,7 @@ def test_solution(problem, user, skipSample, skipCorner):
     for possibleSolution in os.listdir(userPath):
         for languageBlock in languages['languages']:
             if possibleSolution == (definitions['solution_naming']
-                                    .replace('{problem}', str(problem)) + "." + 
+                                    .replace(variables['problem_number'], str(problem)) + "." + 
                                     get_source_extension(languageBlock)):
                 convertedLanguageBlock = replace_language_vars(languageBlock, possibleSolution, userPath)
                 numSolutions += 1
@@ -220,7 +231,7 @@ def compare_generated_outputs(problem, users):
     lastUser = (None, None)
     for user in users:
         userPath = os.path.dirname(os.path.abspath(__file__)) + "/" + user
-        problemString = definitions['solution_naming'].replace('{problem}', str(problem))
+        problemString = definitions['solution_naming'].replace(variables['problem_number'], str(problem))
         generatedPath = (userPath + "/" + problemString + definitions['generated_case_extension']
                     + '.' + definitions['output_file_ending'])
         if not os.path.isfile(generatedPath):
@@ -263,7 +274,7 @@ for problem in problemsToDo:
         if test_solution(problem, people, args.skipsample, args.skipcorner): 
             passingPeople += 1
 
-    if passingPeople == len(args.name):
+    #if passingPeople == len(args.name):
         # All people passed. This means that their generated solutions can be compared
-        if compare_generated_outputs(problem, people):
+        #if compare_generated_outputs(problem, people):
             # TODO: Copy all resources into finalIO
