@@ -22,6 +22,7 @@ import os
 import json
 import sys
 import subprocess
+import shutil
 from tests.unit import conf_languages
 from tests.unit import conf_definitions
 
@@ -250,6 +251,44 @@ def compare_generated_outputs(problem, users):
                 lastUser = (user, output)
     return True
 
+def copy_to_final_io(problem, user):
+    # Needs to copy sample input, sample output, corner input, corner output, 
+    # generated input, and user's generated output.
+    testPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['test_directory']
+    problemString = definitions['solution_naming'].replace(variables['problem_number'], str(problem))
+    userPath = os.path.dirname(os.path.abspath(__file__)) + "/" + user
+    finalDirectory = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/" + definitions['finalio_directory']
+    sampleInputFile = (testPath + "/" + problemString + definitions['sample_case_extension']
+            + '.' + definitions['input_file_ending'])
+    sampleOutputFile = (testPath + "/" + problemString + definitions['sample_case_extension']
+            + '.' + definitions['output_file_ending'])
+    cornerInputFile = (testPath + "/" + problemString + definitions['corner_case_extension']
+            + '.' + definitions['input_file_ending'])
+    cornerOutputFile = (testPath + "/" + problemString + definitions['corner_case_extension']
+            + '.' + definitions['output_file_ending'])
+    generatedInputFile = (testPath + "/" + problemString + definitions['generated_case_extension']
+            + '.' + definitions['input_file_ending'])
+    generatedOutputFile = (userPath + "/" + problemString + definitions['generated_case_extension']
+            + '.' + definitions['output_file_ending'])
+
+    # Make sure all copy items exist first
+    copyList = [sampleInputFile, sampleOutputFile, cornerInputFile, cornerOutputFile,
+            generatedInputFile, generatedOutputFile]
+    for fileToCopy in copyList:
+        if not os.path.isfile(fileToCopy):
+            return False
+
+    # Make sure the FinalIO directory exists. If not, create it:
+    if not os.path.isdir(finalDirectory):
+        os.makedirs(finalDirectory)
+
+    # Now copy all files
+    for fileToCopy in copyList:
+        shutil.copy(fileToCopy, finalDirectory)
+
+    return True
+
+
 # Now parse the arguments to check for specific options
 problemCount = definitions['problem_count']
 problemsToDo = []
@@ -274,7 +313,8 @@ for problem in problemsToDo:
         if test_solution(problem, people, args.skipsample, args.skipcorner): 
             passingPeople += 1
 
-    #if passingPeople == len(args.name):
+    if passingPeople == len(args.name):
         # All people passed. This means that their generated solutions can be compared
-        #if compare_generated_outputs(problem, people):
-            # TODO: Copy all resources into finalIO
+        if compare_generated_outputs(problem, args.name):
+            if not copy_to_final_io(problem, args.name[0]):
+                print("Error copying files to the FinalIO directory")

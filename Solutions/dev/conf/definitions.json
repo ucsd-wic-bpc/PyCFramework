@@ -1,6 +1,6 @@
 {
 	 "test_directory"           : "tests",
-	 "finalio_directory"        : "../FinalIO",
+	 "finalio_directory"        : "FinalIO",
 	 "sample_case_extension"    : "_sample",
 	 "corner_case_extension"    : "_corner",
 	 "generated_case_extension" : "_generated",
