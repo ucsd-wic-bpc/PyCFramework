@@ -162,8 +162,12 @@ def run_solution(convertedLanguageBlock, outputDirectory, inputFiles):
         try:
             output = subprocess.check_output(runCommand, stdin=inputObject).decode("utf-8")
             inputObject.close()
-            with open(outputFile) as outputObject:
-                outputFileContents = outputObject.read()
+            if not os.path.isfile(outputFile):
+                outputFileContents = output
+            else:
+                with open(outputFile) as outputObject:
+                    outputFileContents = outputObject.read()
+
             results.add_run(Run(output, outputFileContents, inputFile))
                 
         except subprocess.CalledProcessError:
@@ -176,6 +180,7 @@ def run_solution(convertedLanguageBlock, outputDirectory, inputFiles):
 def test_solution(problem, user, skipSample, skipCorner):
     # First check to make sure that the user exists
     userPath = os.path.dirname(os.path.abspath(__file__)) + "/" + user
+    userOutputDirectory = userPath + "/" + definitions['output_directory']
     writersPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['writers_directory']
     testPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['test_directory']
     problemString = definitions['solution_naming'].replace('{problem}', str(problem))
@@ -183,6 +188,10 @@ def test_solution(problem, user, skipSample, skipCorner):
     if not os.path.isdir(userPath) or not os.path.islink(writersPath + "/" + user):
         print("{} is not a valid user".format(user))
         return False
+
+    # Check to make sure the user output directory exists
+    if not os.path.isdir(userOutputDirectory):
+        os.makedirs(userOutputDirectory)
 
     # Get all valid input test files
     inputFileList = []
@@ -198,7 +207,7 @@ def test_solution(problem, user, skipSample, skipCorner):
     if not skipCorner and os.path.isfile(cornerFile):
         inputFileList.append(cornerFile)
     if os.path.isfile(generatedFile):
-        inputFileLIst.append(generatedFile)
+        inputFileList.append(generatedFile)
 
     # Now check to make sure that the user has source code for the problem
     numSolutions = 0
@@ -213,12 +222,24 @@ def test_solution(problem, user, skipSample, skipCorner):
                 if compile_solution(convertedLanguageBlock):
                     results = run_solution(convertedLanguageBlock, userPath + "/output",
                                 inputFileList)
+                    numCorrectRuns = 0
                     for run in results.runs:
                         itemType = "SAMPLE" if run.inputFile == sampleFile else "CORNER"
                         if not run.userOutput == run.correctOutput:
                             print(("FAILED {}: {}'s problem {} solution in {}"
                                 .format(itemType, user, problem, convertedLanguageBlock['language'])))
-                        else: numCorrectSolutions += 1
+                        else: 
+                            numCorrectRuns += 1
+                            saveOutputFile = (userPath + "/" + definitions['output_directory'] + "/" + 
+                                    os.path.basename(run.inputFile).replace(definitions['input_file_ending'],
+                                    definitions['output_file_ending']))
+                            with open(saveOutputFile, 'w+') as saveObject:
+                                saveObject.write(run.userOutput)
+
+                    if numCorrectRuns == len(results.runs):
+                        numCorrectSolutions += 1
+
+
                             
     if numSolutions == 0:
         print("{} Does not have problem {}!".format(user, problem))
@@ -268,14 +289,17 @@ def copy_to_final_io(problem, user):
             + '.' + definitions['output_file_ending'])
     generatedInputFile = (testPath + "/" + problemString + definitions['generated_case_extension']
             + '.' + definitions['input_file_ending'])
-    generatedOutputFile = (userPath + "/" + problemString + definitions['generated_case_extension']
-            + '.' + definitions['output_file_ending'])
+    generatedOutputFile = (userPath + "/" + definitions['output_directory'] + "/" +  problemString 
+            + definitions['generated_case_extension'] + '.' + definitions['output_file_ending'])
 
     # Make sure all copy items exist first
     copyList = [sampleInputFile, sampleOutputFile, cornerInputFile, cornerOutputFile,
             generatedInputFile, generatedOutputFile]
+
     for fileToCopy in copyList:
+        print(fileToCopy)
         if not os.path.isfile(fileToCopy):
+            print("Ah")
             return False
 
     # Make sure the FinalIO directory exists. If not, create it:
