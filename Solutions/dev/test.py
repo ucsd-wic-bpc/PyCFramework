@@ -21,6 +21,7 @@ import argparse
 import os
 import json
 import sys
+import copy
 import subprocess
 import shutil
 from tests.unit import conf_languages
@@ -129,13 +130,16 @@ def replace_language_vars_individual(string, problemFile, directory):
 # Replaces the variables of all language blocks by finding the language blocks
 # and delegating functionality to the above replace_language_vars_individual
 def replace_language_vars(languageBlock, problemFile, directory):
+    newLanguageBlock = {}
     for key, languageItem in languageBlock.items():
         if isinstance(languageItem, list):
-            for i in range(0, len(languageItem)):
-                languageItem[i] = replace_language_vars_individual(languageItem[i], problemFile, directory)
+            if not key in newLanguageBlock:
+                newLanguageBlock[key] = []
+            for listEntry in languageItem:
+                newLanguageBlock[key].append(replace_language_vars_individual(listEntry, problemFile, directory))
         else:
-            languageBlock[key] = replace_language_vars_individual(languageItem, problemFile, directory)
-    return languageBlock
+            newLanguageBlock[key] = replace_language_vars_individual(languageItem, problemFile, directory)
+    return newLanguageBlock
                 
 
 # Compile a solution given its language block with correct paths
@@ -161,6 +165,9 @@ def run_solution(convertedLanguageBlock, outputDirectory, inputFiles):
                 '.' + definitions['output_file_ending'])
         try:
             output = subprocess.check_output(runCommand, stdin=inputObject).decode("utf-8")
+            saveOutputFile = outputDirectory + "/" + os.path.basename(outputFile)
+            with open(saveOutputFile, 'w+') as saveObject:
+                saveObject.write(output)
             inputObject.close()
             if not os.path.isfile(outputFile):
                 outputFileContents = output
@@ -183,7 +190,7 @@ def test_solution(problem, user, skipSample, skipCorner):
     userOutputDirectory = userPath + "/" + definitions['output_directory']
     writersPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['writers_directory']
     testPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['test_directory']
-    problemString = definitions['solution_naming'].replace('{problem}', str(problem))
+    problemString = definitions['solution_naming'].replace(variables['problem_number'], str(problem))
 
     if not os.path.isdir(userPath) or not os.path.islink(writersPath + "/" + user):
         print("{} is not a valid user".format(user))
@@ -220,7 +227,7 @@ def test_solution(problem, user, skipSample, skipCorner):
                 convertedLanguageBlock = replace_language_vars(languageBlock, possibleSolution, userPath)
                 numSolutions += 1
                 if compile_solution(convertedLanguageBlock):
-                    results = run_solution(convertedLanguageBlock, userPath + "/output",
+                    results = run_solution(convertedLanguageBlock, userOutputDirectory,
                                 inputFileList)
                     numCorrectRuns = 0
                     for run in results.runs:
@@ -230,11 +237,6 @@ def test_solution(problem, user, skipSample, skipCorner):
                                 .format(itemType, user, problem, convertedLanguageBlock['language'])))
                         else: 
                             numCorrectRuns += 1
-                            saveOutputFile = (userPath + "/" + definitions['output_directory'] + "/" + 
-                                    os.path.basename(run.inputFile).replace(definitions['input_file_ending'],
-                                    definitions['output_file_ending']))
-                            with open(saveOutputFile, 'w+') as saveObject:
-                                saveObject.write(run.userOutput)
 
                     if numCorrectRuns == len(results.runs):
                         numCorrectSolutions += 1
@@ -297,9 +299,7 @@ def copy_to_final_io(problem, user):
             generatedInputFile, generatedOutputFile]
 
     for fileToCopy in copyList:
-        print(fileToCopy)
         if not os.path.isfile(fileToCopy):
-            print("Ah")
             return False
 
     # Make sure the FinalIO directory exists. If not, create it:
@@ -316,7 +316,10 @@ def copy_to_final_io(problem, user):
 # Now parse the arguments to check for specific options
 problemCount = definitions['problem_count']
 problemsToDo = []
-if args.problem[0][0] == '+' or args.problem[0][0] == '-':
+if args.problem[0] == 'a':
+    for i in range(1, problemCount + 1):
+        problemsToDo.append(i)
+elif args.problem[0][0] == '+' or args.problem[0][0] == '-':
         if args.problem[0][0] == '+':
             for i in range(int(args.problem[0][1:]) + 1, problemCount + 1):
                 problemsToDo.append(i)
@@ -327,18 +330,27 @@ elif '-' in args.problem[0]:
     dashIndex = args.problem[0].index('-')
     for i in range(int(args.problem[0][0:dashIndex]), int(args.problem[0][dashIndex + 1:]) + 1):
         problemsToDo.append(i)
+else: problemsToDo.append(int(args.problem[0]))
+
+peopleToTest = []
+if args.name[0] == 'a':
+    writersPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['writers_directory']
+    for person in os.listdir(writersPath):
+        if person == os.path.basename(writersPath):
+            continue
+        peopleToTest.append(person)
 else:
-    problemsToDo.append(int(args.problem[0]))
+    peopleToTest = args.name
 
 
 for problem in problemsToDo:
     passingPeople = 0
-    for people in args.name:
-        if test_solution(problem, people, args.skipsample, args.skipcorner): 
+    for person in peopleToTest:
+        if test_solution(problem, person, args.skipsample, args.skipcorner): 
             passingPeople += 1
 
-    if passingPeople == len(args.name):
+    if passingPeople == len(peopleToTest):
         # All people passed. This means that their generated solutions can be compared
-        if compare_generated_outputs(problem, args.name):
-            if not copy_to_final_io(problem, args.name[0]):
+        if compare_generated_outputs(problem, peopleToTest):
+            if not copy_to_final_io(problem, peopleToTest[0]):
                 print("Error copying files to the FinalIO directory")
