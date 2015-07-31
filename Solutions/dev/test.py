@@ -21,9 +21,10 @@ import argparse
 import os
 import json
 import sys
-import copy
 import subprocess
 import shutil
+import difflib
+import webbrowser
 from tests.unit import conf_languages
 from tests.unit import conf_definitions
 
@@ -43,6 +44,8 @@ parser.add_argument('problem',  nargs=1,
                     help="The problem of the user's solution that is tested")
 parser.add_argument('name',  nargs='+', 
                     help="The people whose solutions will be tested")
+parser.add_argument('--htmldiffs', action='store_true',
+                    help="Store output differences as HTML comparison tables")
 parser.add_argument('--skipsample', action='store_true',
                     help="Do not test the user's solution against sample input")
 parser.add_argument('--skipcorner', action='store_true',
@@ -51,6 +54,8 @@ parser.add_argument('--skipcorner', action='store_true',
 parser.add_argument('--skipvalidation', action='store_true',
                     help=("Do not validate the properties files before loading"
                         " them"))
+parser.add_argument('--openhtml', action='store_true',
+                    help="Open the HTML diffs in a webbrowser")
 
 # Handle the script arguments
 args = parser.parse_args()
@@ -184,7 +189,7 @@ def run_solution(convertedLanguageBlock, outputDirectory, inputFiles):
     return results
     
 
-def test_solution(problem, user, skipSample, skipCorner):
+def test_solution(problem, user, skipSample, skipCorner, generateHTML, openHTML):
     # First check to make sure that the user exists
     userPath = os.path.dirname(os.path.abspath(__file__)) + "/" + user
     userOutputDirectory = userPath + "/" + definitions['output_directory']
@@ -235,6 +240,17 @@ def test_solution(problem, user, skipSample, skipCorner):
                         if not run.userOutput == run.correctOutput:
                             print(("FAILED {}: {}'s problem {} solution in {}"
                                 .format(itemType, user, problem, convertedLanguageBlock['language'])))
+
+                            if generateHTML:
+                                userOutputLines = run.userOutput.splitlines()
+                                correctOutputLines = run.correctOutput.splitlines()
+                                diffContents = difflib.HtmlDiff().make_file(userOutputLines, correctOutputLines)
+                                diffFile = (userOutputDirectory + "/" + problemString + "_" +
+                                        itemType.lower() + '_' +  convertedLanguageBlock['language'] + ".diff.html")
+                                with open(diffFile, 'w+') as f:
+                                    f.write(diffContents)
+                                if openHTML:
+                                    webbrowser.open(diffFile)
                         else: 
                             numCorrectRuns += 1
 
@@ -346,7 +362,8 @@ else:
 for problem in problemsToDo:
     passingPeople = 0
     for person in peopleToTest:
-        if test_solution(problem, person, args.skipsample, args.skipcorner): 
+        if test_solution(problem, person, args.skipsample, args.skipcorner, 
+                args.htmldiffs, args.openhtml):
             passingPeople += 1
 
     if passingPeople == len(peopleToTest):
