@@ -20,7 +20,7 @@
 import argparse
 import os
 import json
-import sys
+import sys 
 import subprocess
 import shutil
 import difflib
@@ -73,17 +73,17 @@ if not os.path.isfile(VARIABLES_FILE):
     sys.exit(1)
 
 # Run validation tests
-if not args.skipvalidation and not conf_languages.run_tests():
+if not args.skipvalidation and not test_validate_languages.run_tests():
     print(("Validation tests for the languages configuration file failed."
         " This means that there was an error within your conf/languages.json"
         " file. Cannot continue"))
     sys.exit(1)
-if not args.skipvalidation and not conf_definitions.run_tests():
+if not args.skipvalidation and not test_validate_definitions.run_tests():
     print(("Validation tests for the definitions configuration file failed."
         " This means that there was an error within your conf/definitions.json"
         " file. Cannot continue"))
     sys.exit(1)
-if not args.skipvalidation and not conf_variables.run_tests():
+if not args.skipvalidation and not test_validate_variables.run_tests():
     print(("Validation tests for the variables configuration file failed."
         " This means that there was an error within your conf/variables.json"
         " file. Cannot continue"))
@@ -222,6 +222,10 @@ def test_solution(problem, user, skipSample, skipCorner, generateHTML, openHTML)
         inputFileList.append(cornerFile)
     if os.path.isfile(generatedFile):
         inputFileList.append(generatedFile)
+
+    if len(inputFileList) == 0:
+        print("ERROR: Cannot test problem {}. No case files found in {}".format(problem, testPath))
+        return False
 
     # Now check to make sure that the user has source code for the problem
     numSolutions = 0
