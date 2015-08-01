@@ -33,9 +33,10 @@ This script tests a user's problem against sample input and corner-case input
 as well as generates output for generated cases.
 """
 
-DEFINITIONS_FILE = os.path.dirname(os.path.abspath(__file__)) + "/conf/definitions.json"
-LANGUAGES_FILE = os.path.dirname(os.path.abspath(__file__)) + "/conf/languages.json"
-VARIABLES_FILE = os.path.dirname(os.path.abspath(__file__)) + "/conf/variables.json"
+CONF_DIRECTORY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "conf")
+DEFINITIONS_FILE = os.path.join(CONF_DIRECTORY, "definitions.json")
+LANGUAGES_FILE = os.path.join(CONF_DIRECTORY, "languages.json")
+VARIABLES_FILE = os.path.join(CONF_DIRECTORY, "variables.json")
 
 # Declare the script arguments
 parser = argparse.ArgumentParser(description=("Tests users' solutions"
@@ -145,6 +146,7 @@ def replace_language_vars(languageBlock, problemFile, directory):
         else:
             newLanguageBlock[key] = replace_language_vars_individual(languageItem, problemFile, directory)
     return newLanguageBlock
+
                 
 
 # Compile a solution given its language block with correct paths
@@ -191,13 +193,13 @@ def run_solution(convertedLanguageBlock, outputDirectory, inputFiles):
 
 def test_solution(problem, user, skipSample, skipCorner, generateHTML, openHTML):
     # First check to make sure that the user exists
-    userPath = os.path.dirname(os.path.abspath(__file__)) + "/" + user
-    userOutputDirectory = userPath + "/" + definitions['output_directory']
-    writersPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['writers_directory']
-    testPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['test_directory']
+    userPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), user)
+    userOutputDirectory = os.path.join(userPath, definitions['user_output_directory'])
+    writersPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), definitions['writers_directory'])
+    testPath = os.path.join(os.path.dirname(os.path.abspath(__file__)),definitions['test_directory'])
     problemString = definitions['solution_naming'].replace(variables['problem_number'], str(problem))
 
-    if not os.path.isdir(userPath) or not os.path.islink(writersPath + "/" + user):
+    if not os.path.isdir(userPath) or not os.path.islink(os.path.join(writersPath, user)):
         print("{} is not a valid user".format(user))
         return False
 
@@ -207,12 +209,12 @@ def test_solution(problem, user, skipSample, skipCorner, generateHTML, openHTML)
 
     # Get all valid input test files
     inputFileList = []
-    sampleFile = (testPath + "/" + problemString + definitions['sample_case_extension']
-                + '.' + definitions['input_file_ending'])
-    cornerFile = (testPath + "/" + problemString + definitions['corner_case_extension']
-                + '.' + definitions['input_file_ending'])
-    generatedFile = (testPath + "/" + problemString + definitions['generated_case_extension']
-                + '.' + definitions['input_file_ending'])
+    sampleFile = (os.path.join(testPath, problemString + definitions['sample_case_extension']
+                + '.' + definitions['input_file_ending']))
+    cornerFile = (os.path.join(testPath, problemString + definitions['corner_case_extension']
+                + '.' + definitions['input_file_ending']))
+    generatedFile = (os.path.join(testPath, problemString + definitions['generated_case_extension']
+                + '.' + definitions['input_file_ending']))
 
     if not skipSample and os.path.isfile(sampleFile):
         inputFileList.append(sampleFile)
@@ -245,8 +247,10 @@ def test_solution(problem, user, skipSample, skipCorner, generateHTML, openHTML)
                                 userOutputLines = run.userOutput.splitlines()
                                 correctOutputLines = run.correctOutput.splitlines()
                                 diffContents = difflib.HtmlDiff().make_file(userOutputLines, correctOutputLines)
-                                diffFile = (userOutputDirectory + "/" + problemString + "_" +
-                                        itemType.lower() + '_' +  convertedLanguageBlock['language'] + ".diff.html")
+                                diffFile = (os.path.join(userOutputDirectory, definitions['html_diff_naming']
+                                    .replace(variables['case_type'], itemType.lower())
+                                    .replace(variables['language'], convertedLanguageBlock['language'])
+                                    .replace(variables['problem_number'], str(problem))))
                                 with open(diffFile, 'w+') as f:
                                     f.write(diffContents)
                                 if openHTML:
@@ -270,10 +274,11 @@ def test_solution(problem, user, skipSample, skipCorner, generateHTML, openHTML)
 def compare_generated_outputs(problem, users):
     lastUser = (None, None)
     for user in users:
-        userPath = os.path.dirname(os.path.abspath(__file__)) + "/" + user
+        userPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), user)
         problemString = definitions['solution_naming'].replace(variables['problem_number'], str(problem))
-        generatedPath = (userPath + "/" + problemString + definitions['generated_case_extension']
-                    + '.' + definitions['output_file_ending'])
+        generatedPath = (os.path.join(userPath, problemString + definitions['generated_case_extension']
+                    + '.' + definitions['output_file_ending']))
+
         if not os.path.isfile(generatedPath):
             output = ""
         else:
@@ -293,22 +298,22 @@ def compare_generated_outputs(problem, users):
 def copy_to_final_io(problem, user):
     # Needs to copy sample input, sample output, corner input, corner output, 
     # generated input, and user's generated output.
-    testPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['test_directory']
+    testPath = os.path.join(os.path.dirname(os.path.abspath(__file__)),definitions['test_directory'])
     problemString = definitions['solution_naming'].replace(variables['problem_number'], str(problem))
-    userPath = os.path.dirname(os.path.abspath(__file__)) + "/" + user
-    finalDirectory = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/" + definitions['finalio_directory']
-    sampleInputFile = (testPath + "/" + problemString + definitions['sample_case_extension']
-            + '.' + definitions['input_file_ending'])
-    sampleOutputFile = (testPath + "/" + problemString + definitions['sample_case_extension']
-            + '.' + definitions['output_file_ending'])
-    cornerInputFile = (testPath + "/" + problemString + definitions['corner_case_extension']
-            + '.' + definitions['input_file_ending'])
-    cornerOutputFile = (testPath + "/" + problemString + definitions['corner_case_extension']
-            + '.' + definitions['output_file_ending'])
-    generatedInputFile = (testPath + "/" + problemString + definitions['generated_case_extension']
-            + '.' + definitions['input_file_ending'])
-    generatedOutputFile = (userPath + "/" + definitions['output_directory'] + "/" +  problemString 
-            + definitions['generated_case_extension'] + '.' + definitions['output_file_ending'])
+    userPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), user)
+    finalDirectory = os.path.join(os.path.dirname(os.path.abspath(__file__)), definitions['finalio_directory'])
+    sampleInputFile = (os.path.join(testPath, problemString + definitions['sample_case_extension']
+            + '.' + definitions['input_file_ending']))
+    sampleOutputFile = (os.path.join(testPath, problemString + definitions['sample_case_extension']
+            + '.' + definitions['output_file_ending']))
+    cornerInputFile = (os.path.join(testPath, problemString + definitions['corner_case_extension']
+            + '.' + definitions['input_file_ending']))
+    cornerOutputFile = (os.path.join(testPath, problemString + definitions['corner_case_extension']
+            + '.' + definitions['output_file_ending']))
+    generatedInputFile = (os.path.join(testPath, problemString + definitions['generated_case_extension']
+            + '.' + definitions['input_file_ending']))
+    generatedOutputFile = (os.path.join(os.path.join(userPath, definitions['user_output_directory']), problemString 
+            + definitions['generated_case_extension'] + '.' + definitions['output_file_ending']))
 
     # Make sure all copy items exist first
     copyList = [sampleInputFile, sampleOutputFile, cornerInputFile, cornerOutputFile,
@@ -350,7 +355,7 @@ else: problemsToDo.append(int(args.problem[0]))
 
 peopleToTest = []
 if args.name[0] == 'a':
-    writersPath = os.path.dirname(os.path.abspath(__file__)) + "/" + definitions['writers_directory']
+    writersPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), definitions['writers_directory'])
     for person in os.listdir(writersPath):
         if person == os.path.basename(writersPath):
             continue

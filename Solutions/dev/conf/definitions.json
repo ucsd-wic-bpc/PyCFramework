@@ -1,13 +1,14 @@
 {
-	 "test_directory"           : "tests",
-	 "finalio_directory"        : "FinalIO",
+	 "test_directory"           : "cases",
+	 "finalio_directory"        : "../FinalIO",
 	 "sample_case_extension"    : "_sample",
 	 "corner_case_extension"    : "_corner",
 	 "generated_case_extension" : "_generated",
 	 "input_file_ending"        : "in",
 	 "output_file_ending"       : "out",
 	 "writers_directory"        : ".writers",
-	 "output_directory" 	    : "output",
+	 "user_output_directory"    : "output",
 	 "solution_naming"          : "problem{problem}",
+	 "html_diff_naming"         : "problem{problem}_{caseType}_{language}.diff.html",
 	 "problem_count"            : 3
 }
