@@ -25,8 +25,8 @@ import subprocess
 import shutil
 import difflib
 import webbrowser
-from tests.unit import conf_languages
-from tests.unit import conf_definitions
+from tests import test_validate_languages
+from tests import test_validate_definitions
 
 """
 This script tests a user's problem against sample input and corner-case input
