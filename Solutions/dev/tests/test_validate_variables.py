@@ -5,7 +5,7 @@ import json
 VARIABLES_DEFINITIONS_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
         'conf', 'variables.json')
 
-class VariableValidationTest(unittest.TestCase):
+class TestValidateVariables(unittest.TestCase):
 
 
     def test_simple_dictionary(self):

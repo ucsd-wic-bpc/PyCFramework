@@ -25,8 +25,6 @@ import subprocess
 import shutil
 import difflib
 import webbrowser
-from tests import test_validate_languages
-from tests import test_validate_definitions
 
 """
 This script tests a user's problem against sample input and corner-case input
@@ -52,9 +50,6 @@ parser.add_argument('--skipsample', action='store_true',
 parser.add_argument('--skipcorner', action='store_true',
                     help=("Do not test the user's solution against"
                         " corner case input"))
-parser.add_argument('--skipvalidation', action='store_true',
-                    help=("Do not validate the properties files before loading"
-                        " them"))
 parser.add_argument('--openhtml', action='store_true',
                     help="Open the HTML diffs in a webbrowser")
 
@@ -71,24 +66,6 @@ if not os.path.isfile(LANGUAGES_FILE):
 if not os.path.isfile(VARIABLES_FILE):
     print("Error: Variables file {} cannot be found".format(VARIABLES_FILE))
     sys.exit(1)
-
-# Run validation tests
-if not args.skipvalidation and not test_validate_languages.run_tests():
-    print(("Validation tests for the languages configuration file failed."
-        " This means that there was an error within your conf/languages.json"
-        " file. Cannot continue"))
-    sys.exit(1)
-if not args.skipvalidation and not test_validate_definitions.run_tests():
-    print(("Validation tests for the definitions configuration file failed."
-        " This means that there was an error within your conf/definitions.json"
-        " file. Cannot continue"))
-    sys.exit(1)
-if not args.skipvalidation and not test_validate_variables.run_tests():
-    print(("Validation tests for the variables configuration file failed."
-        " This means that there was an error within your conf/variables.json"
-        " file. Cannot continue"))
-    sys.exit(1)
-
 
 # At this point, the configurations pass validation tests. Load them in
 with open(DEFINITIONS_FILE) as f:
