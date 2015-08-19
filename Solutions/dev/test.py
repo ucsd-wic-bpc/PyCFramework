@@ -316,7 +316,7 @@ def copy_to_final_io(problem, user):
             + '.' + definitions['output_file_ending']))
     generatedInputFile = (os.path.join(testPath, problemString + definitions['generated_case_extension']
             + '.' + definitions['input_file_ending']))
-    generatedOutputFile = (os.path.join(os.path.join(userPath, definitions['user_output_directory']), problemString 
+    generatedOutputFile = (os.path.join(userPath, definitions['user_output_directory'], problemString 
             + definitions['generated_case_extension'] + '.' + definitions['output_file_ending']))
 
     # Make sure all copy items exist first
