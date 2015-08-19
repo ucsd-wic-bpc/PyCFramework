@@ -10,108 +10,68 @@
 import json
 import os
 import re
+import unittest
 
 # Settings
-LANGUAGES_SETTINGS_FILE = os.path.dirname(os.path.abspath(__file__)) + "/../../conf/languages.json"
-proper_fields = ['variables', 'languages']
-required_subfields = {'languages' : ['runCommand', 'runExtension', 'runArguments']}
-proper_fields_min_lens = [0, 1]
-variable_field = 'variables'
-variable_pattern = re.compile("{[^{^}]*}")
+LANGUAGES_SETTINGS_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        'conf', 'languages.json')
+VARIABLES_SETTINGS_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        'conf', 'variables.json')
+necessaryFields = [('language', str), ('runExtension', str), ('runCommand', str), ('runArguments', list)]
 
-# Tests
-def fileExists():
-    return os.path.isfile(LANGUAGES_SETTINGS_FILE)
+class TestValidateLanguages(unittest.TestCase):
+    def test_structure(self):
+        """ Make sure that the languages configuration follows the required structure """
+        with open(LANGUAGES_SETTINGS_FILE, 'r') as openLangFile:
+            languageDict = json.loads(openLangFile.read())
 
-def containsProperFields(jsonContents):
-    for field in proper_fields:
-        if not field in jsonContents:
-            return False
+        self.assertTrue(isinstance(languageDict, dict))
+        self.assertTrue('languages' in languageDict)
+        self.assertTrue(isinstance(languageDict['languages'], list))
+        for languageBlock in languageDict['languages']:
+            self.assertTrue(isinstance(languageBlock, dict))
 
-    return len(jsonContents) == len(proper_fields)
+    def test_necessary_fields(self):
+        """ Make sure that each language block has the required fields """
+        with open(LANGUAGES_SETTINGS_FILE, 'r') as openLangFile:
+            languageDict = json.loads(openLangFile.read())
 
-def containsProperContentsAmounts(jsonContents):
-    for i in range(0, len(proper_fields_min_lens)):
-        if len(jsonContents[proper_fields[i]]) < proper_fields_min_lens[i]:
-            return False
-    return True
+        for languageBlock in languageDict['languages']:
+            for necessaryTuple in necessaryFields:
+                self.assertTrue(necessaryTuple[0] in languageBlock)
+                self.assertTrue(isinstance(languageBlock[necessaryTuple[0]], necessaryTuple[1]))
+                if isinstance(languageBlock[necessaryTuple[0]], list):
+                    self.assertTrue(all(isinstance(element, str) for element in languageBlock[necessaryTuple[0]]))
 
-def containsDeclaredVariables(jsonContents):
-    for field in proper_fields:
-        if field == variable_field:
-            continue
+    def test_valid_variables(self):
+        """ Make sure that all variables in language blocks are valid """
+        with open(LANGUAGES_SETTINGS_FILE, 'r') as openLangFile:
+            languageDict = json.loads(openLangFile.read())
 
+        with open(VARIABLES_SETTINGS_FILE, 'r') as openVarFile:
+            variablesContents = json.loads(openVarFile.read())
 
-        for fieldSet in jsonContents[field]:
-            for key, value in fieldSet.items():
-                if isinstance(value, list):
-                    for item in value:
-                        for variable in variable_pattern.findall(item):
-                            found = False
-                            for k, v in jsonContents[variable_field].items():
-                                if variable == v:
-                                    found = True
-                            if not found:
-                                return False
+        variablePattern = re.compile(r'{[^{^}]*}')
+        for languageBlock in languageDict['languages']:
+            for dictKey, dictContents in languageBlock.items():
+                if isinstance(dictContents, list):
+                    for contents in dictContents:
+                        variables = variablePattern.findall(str(contents))
+                        if len(variables) > 0:
+                            for variable in variables:
+                                valid = False
+                                for variableKey, variableItem in variablesContents.items():
+                                    if variable == variableItem:
+                                        valid = True
+                                        break
+                            self.assertTrue(valid)
                 else:
-                    for variable in variable_pattern.findall(value):
-                        found = False
-                        for k, v in jsonContents[variable_field].items():
-                            if variable == v:
-                                found = True
-                        if not found:
-                            return False
-        return True
-
-def containsAllRequiredSubfields(jsonContents):
-    for field, subfields in required_subfields.items():
-        for subfield in subfields:
-            found = False
-            for indivItem in jsonContents[field]:
-                for key, value in indivItem.items():
-                    if key == subfield:
-                        found = True
-                if not found:
-                    return False
-    return True
-
-def run_tests():
-    if not fileExists():
-        return False
-
-    with open(LANGUAGES_SETTINGS_FILE) as f:
-        contents = f.read()
-
-    if len(contents) <= 0:
-        return False
-
-    jsonContents = json.loads(contents)
-    if not containsProperFields(jsonContents) or \
-            not containsProperContentsAmounts(jsonContents):
-                return False
-
-    if not containsDeclaredVariables(jsonContents):
-        return False
-
-    if not containsAllRequiredSubfields(jsonContents):
-        return False
-
-    return True
-                
-if __name__ == '__main__':
-    assert(fileExists())  # Check to make sure languages file exists
-
-    with open(LANGUAGES_SETTINGS_FILE) as f:
-        contents = f.read()
-
-    assert(len(contents) > 0) # Check to make sure languages file is not empty
-
-    jsonContents = json.loads(contents) 
-    assert(containsProperFields(jsonContents))
-    assert(containsProperContentsAmounts(jsonContents))
-
-    # Chcek that all languages have a run command and all variables are real
-    assert(containsDeclaredVariables(jsonContents))
-    
-    # Check that required subfields are there
-    assert(containsAllRequiredSubfields(jsonContents))
+                    variables = variablePattern.findall(str(dictContents))
+                    if len(variables) > 0:
+                        for variable in variables:
+                            valid = False
+                            for variableKey, variableItem in variablesContents.items():
+                                if variable == variableItem:
+                                    valid = True
+                                    break
+                        self.assertTrue(valid)
