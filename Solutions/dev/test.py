@@ -124,8 +124,6 @@ def replace_language_vars(languageBlock, problemFile, directory):
             newLanguageBlock[key] = replace_language_vars_individual(languageItem, problemFile, directory)
     return newLanguageBlock
 
-                
-
 # Compile a solution given its language block with correct paths
 def compile_solution(convertedLanguageBlock):
     # Check if the solution needs compiling and compile if it does
@@ -137,7 +135,7 @@ def compile_solution(convertedLanguageBlock):
             return False
     return True
 
-# Run a rolution and return its RunResults.
+# Run a solution and return its RunResults.
 def run_solution(convertedLanguageBlock, outputDirectory, inputFiles):
     runCommand = []
     runCommand.append(convertedLanguageBlock['runCommand'])
@@ -166,7 +164,7 @@ def run_solution(convertedLanguageBlock, outputDirectory, inputFiles):
             results.add_run(Run(output, outputFileContents, inputFile))
 
     return results
-    
+
 
 def test_solution(problem, user, skipSample, skipCorner, generateHTML, openHTML):
     # First check to make sure that the user exists
@@ -313,7 +311,6 @@ def copy_to_final_io(problem, user):
         shutil.copy(fileToCopy, finalDirectory)
 
     return True
-
 
 # Now parse the arguments to check for specific options
 problemCount = definitions['problem_count']
