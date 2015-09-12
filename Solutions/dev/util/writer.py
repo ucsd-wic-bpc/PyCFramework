@@ -5,7 +5,7 @@
 # 
 # This file contains all information pertaining to solution writers
 ################################################################################
-import fileops
+from util import fileops
 
 class Writer:
     DATAFILE_PATH = 'data.json'
@@ -18,34 +18,38 @@ class Writer:
         self._path = writerPath
         self._solutions = {} 
 
-    def _get_datafile_path(self):
+    def _get_datafile_path(self) -> str:
         """
         Return the path of the data file for this writer. 
         """
-        return fileops.join_path(self._path, [DATAFILE_PATH])
+        return fileops.join_path(self._path, self.DATAFILE_PATH)
 
-    def get_solutions(self, problemNumber):
+    def get_solutions(self, problemNumber: int) -> list:
         """
         Get list of solution for specified problem
         """
         return self._solutions[problemNumber] if problemNumber in self._solutions else []
 
-    def get_all_solutions(self):
+    def get_all_solutions(self) -> list:
         """
         Get list of all user completed solutions
         """
-        return [problems for problemNumber, problems in self._solution.items()]
+        totalSolutions = []
+        for solutionList in [solutions for problemNumber, solutions in self._solutions.items()]:
+            totalSolutions.extend(solutionList)
 
-    @classmethod
-    def load_from_path(cls, path):
+        return totalSolutions
+
+    @staticmethod
+    def load_from_path(path):
         """
         Loads a writer and all their solutions from a specified path
         """
-        loadedWriter = Writer(writerPath=path)
-
         # Check if writer directoroy exists. If not, return nothing
         if not fileops.exists(path, fileops.FileType.DIRECTORY):
             return None
+
+        loadedWriter = Writer(writerPath=path)
 
         # Load the user data from the data file
         dataDictionary = fileops.get_json_dict(loadedWriter._get_datafile_path)
@@ -59,4 +63,4 @@ class Writer:
         if DATAFILE_EMAIL_FIELD in dataDictionary:
             loadedWriter.email = dataDictionary[DATAFILE_EMAIL_FIELD]
 
-        # 
+        # Load all solutions
