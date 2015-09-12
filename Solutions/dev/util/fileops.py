@@ -39,6 +39,20 @@ def join_path(path, *parts):
     """
     return os.path.join(path, parts)
 
+def get_files_in_dir(path: str, recursive: bool=False) -> list:
+    """
+    Returns a list of filepaths within a directory. Also includes child directories if recursive
+    """
+    if not recursive:
+        return [filePath for filePath in os.listdir(path) if os.path.isfile(filePath)]
+    else:
+        workingFileList = get_files_in_dir(path, recursive=False)
+        for filePath in os.listdir(path):
+            if os.path.isdir(filePath):
+                workingFileList.extend(get_files_in_dir(filePath, recursive=True))
+
+        return workingFileList
+
 class FileType:
     FILE = 0
     DIRECTORY = 1

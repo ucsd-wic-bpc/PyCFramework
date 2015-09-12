@@ -84,3 +84,32 @@ class TestFileOps(unittest.TestCase):
         self.assertEquals(util.fileops.join_path('path', 'path1', 'path2'), 'ahooby')
         mocked_fileops_os_path.joinassert_called_with('path', 'path1', 'path2')
 
+    @unittest.mock.patch('util.fileops.os.path')
+    @unittest.mock.patch('util.fileops.os')
+    def test_get_files_in_dir_nonrecursive(self, mocked_fileops_os, mocked_fileops_os_path):
+        """
+        Ensure a nonrecursive fileops.get_files_in_dir returns only the files in the parent dir
+        """
+        mocked_fileops_os.listdir.return_value = ['file1', 'file2', 'file3', 'dir1']
+        mocked_fileops_os_path.isfile.side_effect = lambda fileName: False if fileName == 'dir1' else True
+        self.assertEquals(util.fileops.get_files_in_dir('path'), ['file1', 'file2', 'file3'])
+        mocked_fileops_os.listdir.assert_called_with('path')
+        for fileItem in ['file1', 'file2', 'file3', 'dir1']:
+            mocked_fileops_os_path.isfile.assert_any_call(fileItem)
+
+    @unittest.mock.patch('util.fileops.os.path')
+    @unittest.mock.patch('util.fileops.os')
+    def test_get_files_in_dir_recursive(self, mocked_fileops_os, mocked_fileops_os_path):
+        """
+        Ensure a recursive fileops.get_files_in_dir returns files in top dir and children dirs
+        """
+        mocked_fileops_os.listdir.side_effect = lambda path: (['file1', 'file2', 'file3', 'dir1'] if path == 'path'
+                                                        else ['file4', 'file5', 'file6'])
+        mocked_fileops_os_path.isfile.side_effect = lambda fileName: False if fileName == 'dir1' else True
+        mocked_fileops_os_path.isdir.side_effect = lambda fileName: True if fileName == 'dir1' or fileName == 'path' else False
+        self.assertEquals(util.fileops.get_files_in_dir('path', recursive=True), 
+                ['file1', 'file2', 'file3', 'file4', 'file5', 'file6'])
+        mocked_fileops_os.listdir.assert_any_call('path')
+        mocked_fileops_os.listdir.assert_any_call('dir1')
+        for fileItem in ['file1', 'file2', 'file3', 'dir1', 'file4', 'file5', 'file6']:
+            mocked_fileops_os_path.isfile.assert_any_call(fileItem)
