@@ -47,3 +47,40 @@ class TestFileOps(unittest.TestCase):
         self.assertFalse(util.fileops.exists('path', FileType.DIRECTORY))
         mocked_os_path.exists.assert_called_with('path')
         mocked_os_path.isdir.assert_called_with('path')
+
+    @unittest.mock.patch('util.fileops.json')
+    @unittest.mock.patch('util.fileops.open', create=True)
+    @unittest.mock.patch('util.fileops.exists')
+    def test_get_json_dict(self, mocked_fileops_exists, mocked_fileops_open,
+            mocked_fileops_json):
+        """
+        Ensure fileops.get_json_dict works as expected
+        """
+        # Ensure a nonexistent file returns an empty dict
+        mocked_fileops_exists.return_value = False
+        self.assertEquals(util.fileops.get_json_dict('path'), {})
+        mocked_fileops_exists.assert_called_with('path', FileType.FILE)
+
+        # Ensure an existing file returns a valid dictionary
+        mocked_fileops_exists.return_value = True
+        mockedFile = unittest.mock.MagicMock()
+        mockedFileEnter = unittest.mock.MagicMock()
+        mockedFileEnter.read.return_value = 'helloWorld'
+        mockedFile.__enter__.return_value = mockedFileEnter
+        mocked_fileops_open.return_value = mockedFile
+        mocked_fileops_json.loads.return_value = 'babaloo'
+        util.fileops.get_json_dict('path')
+        self.assertEquals(util.fileops.get_json_dict('path'), 'babaloo')
+        mocked_fileops_exists.assert_called_with('path', FileType.FILE)
+        mocked_fileops_open.assert_called_with('path')
+        mocked_fileops_json.loads.assert_called_with('helloWorld')
+
+    @unittest.mock.patch('util.fileops.os.path')
+    def test_join_path(self, mocked_fileops_os_path):
+        """
+        Ensure fileops.join_path works as expected
+        """
+        mocked_fileops_os_path.join.return_value = 'ahooby'
+        self.assertEquals(util.fileops.join_path('path', 'path1', 'path2'), 'ahooby')
+        mocked_fileops_os_path.joinassert_called_with('path', 'path1', 'path2')
+

@@ -33,15 +33,11 @@ def get_json_dict(path):
 
     return dictionary
 
-def join_path(path, parts):
+def join_path(path, *parts):
     """
     Joins the path with a list of parts
     """
-    workingPath = path
-    for pathPart in parts:
-        workingPath = os.path.join(workingPath, pathPart)
-
-    return workingPath
+    return os.path.join(path, parts)
 
 class FileType:
     FILE = 0
