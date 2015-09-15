@@ -53,6 +53,13 @@ def get_files_in_dir(path: str, recursive: bool=False) -> list:
 
         return workingFileList
 
+def get_basename_less_extension(path: str) -> str:
+    """
+    Returns the basename of the file given by path without its extension
+    """
+    return os.path.splitext(os.basename(path))[0]
+
+
 class FileType:
     FILE = 0
     DIRECTORY = 1

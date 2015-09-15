@@ -40,6 +40,15 @@ class Writer:
 
         return totalSolutions
 
+    def _add_solution(self, solution):
+        """
+        Add a provided solution to the solution list
+        """
+        if not solution.problemNumber in self._solutions:
+            self._solutions[solution.problemNumber] = [solution]
+        else:
+            self._solutions[solution.problemNumber].append(solution)
+
     @staticmethod
     def load_from_path(path):
         """
@@ -64,3 +73,7 @@ class Writer:
             loadedWriter.email = dataDictionary[DATAFILE_EMAIL_FIELD]
 
         # Load all solutions
+        for possibleSolution in fileops.get_files_in_dir(path):
+            if Solution.is_solution_file(path):
+                solutionObject = Solution.load_from_path(path)
+                loadedWriter._add_solution(solutionObject)
