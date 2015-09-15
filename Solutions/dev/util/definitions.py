@@ -16,7 +16,7 @@ class Definitions:
         """
         Gets the value of the definition given by key
         """
-        if _definitionsDict is None:
+        if cls._definitionsDict is None:
             cls.load_definitions()
 
         if not key in cls._definitionsDict:

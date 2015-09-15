@@ -57,8 +57,19 @@ def get_basename_less_extension(path: str) -> str:
     """
     Returns the basename of the file given by path without its extension
     """
-    return os.path.splitext(os.basename(path))[0]
+    return os.path.splitext(os.path.basename(path))[0]
 
+def get_basename(path: str) -> str:
+    """
+    Returns the basename of the file given by path
+    """
+    return os.path.basename(path)
+
+def get_parent_dir(path: str) -> str:
+    """
+    Returns the parent directory of the given path
+    """
+    return os.path.dirname(path)
 
 class FileType:
     FILE = 0

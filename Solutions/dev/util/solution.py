@@ -6,7 +6,7 @@
 # Contains information and functions pertaining to the Solution class
 ################################################################################
 from util import fileops
-from util import Definitions
+from util import Definitions, Variables
 
 class Solution:
     NAMING_DEFINITION_KEY = 'solution_naming'
@@ -45,4 +45,7 @@ class Solution:
         newSolution = Solution(solutionPath=path)
         filename = fileops.get_basename_less_extension(path)
         filenameMatcher = Definitions.get_value_matcher(NAMING_DEFINITION_KEY)
-        newSolution.problemNumber = filenameMatcher.get_variable_value(filename, 'problem')
+        newSolution.problemNumber = filenameMatcher.get_variable_value(filename, 
+                Variables.get_variable_key_name(Variables.NAME_PROBLEM_NUMBER))
+        newSolution.solutionWriter = fileops.get_basename(fileops.get_parent_dir(path))
+        newSolution.solutionLanguage = 
