@@ -9,6 +9,7 @@ import unittest.mock
 import util.fileops
 from util.fileops import FileType
 import unittest
+import os
 
 
 class TestFileOps(unittest.TestCase):
@@ -54,7 +55,7 @@ class TestFileOps(unittest.TestCase):
     def test_get_json_dict(self, mocked_fileops_exists, mocked_fileops_open,
             mocked_fileops_json):
         """
-        Ensure fileops.get_json_dict works as expected
+        Ensure fileops.get_json_dict works as expected (With mocked json lib)
         """
         # Ensure a nonexistent file returns an empty dict
         mocked_fileops_exists.return_value = False
@@ -74,15 +75,44 @@ class TestFileOps(unittest.TestCase):
         mocked_fileops_exists.assert_called_with('path', FileType.FILE)
         mocked_fileops_open.assert_called_with('path')
         mocked_fileops_json.loads.assert_called_with('helloWorld')
+    
+    @unittest.mock.patch('util.fileops.open', create=True)
+    @unittest.mock.patch('util.fileops.exists')
+    def test_get_json_dict_unmocked(self, mocked_fileops_exists, mocked_fileops_open):
+        """
+        Ensure fileops.get_json_dict works as expected (Using json lib)
+        """
+        mocked_fileops_exists.return_value = True
+        mockedFile = unittest.mock.MagicMock()
+        mockedFileEnter = unittest.mock.MagicMock()
+        mockedFileEnter.read.return_value = '{"entry1" : ["listitem1","listitem2"]}'
+        mockedFile.__enter__.return_value = mockedFileEnter
+        mocked_fileops_open.return_value = mockedFile
+        self.assertEquals(util.fileops.get_json_dict('path'), {'entry1' : 
+                                                                [ 'listitem1',
+                                                                  'listitem2'
+                                                                ]
+                                                              })
+        mocked_fileops_exists.assert_called_with('path', FileType.FILE)
+        mocked_fileops_open.assert_called_with('path')
 
     @unittest.mock.patch('util.fileops.os.path')
     def test_join_path(self, mocked_fileops_os_path):
         """
-        Ensure fileops.join_path works as expected
+        Ensure fileops.join_path works as expected (Using mocked path.join)
         """
         mocked_fileops_os_path.join.return_value = 'ahooby'
         self.assertEquals(util.fileops.join_path('path', 'path1', 'path2'), 'ahooby')
         mocked_fileops_os_path.joinassert_called_with('path', 'path1', 'path2')
+
+    def test_join_path_unmocked(self):
+        """
+        Ensure fileops.join_path works as expected when os.path.join is not mocked
+        """
+        self.assertEquals(util.fileops.join_path('path1', 'path2'), 
+                os.path.join('path1', 'path2'))
+        self.assertEquals(util.fileops.join_path('path1', 'path2', 'path3'),
+                os.path.join('path1', 'path2', 'path3'))
 
     @unittest.mock.patch('util.fileops.os.path')
     @unittest.mock.patch('util.fileops.os')
@@ -113,3 +143,32 @@ class TestFileOps(unittest.TestCase):
         mocked_fileops_os.listdir.assert_any_call('dir1')
         for fileItem in ['file1', 'file2', 'file3', 'dir1', 'file4', 'file5', 'file6']:
             mocked_fileops_os_path.isfile.assert_any_call(fileItem)
+
+    def test_get_basename_less_extension(self):
+        """
+        Ensure fileops.get_basename_less_extension works as intended
+        """
+        self.assertEquals(util.fileops.get_basename_less_extension('/home/brandon/test/test.py'),
+                'test')
+        self.assertEquals(util.fileops.get_basename_less_extension('poopies.html'),
+                'poopies')
+        self.assertEquals(util.fileops.get_basename_less_extension('raw'), 'raw')
+
+    def test_get_basename(self):
+        """
+        Ensure fileops.get_basename works as intended
+        """
+        self.assertEquals(util.fileops.get_basename('/home/brandon/test/test.py'),
+                'test.py')
+        self.assertEquals(util.fileops.get_basename('poopies.html'),
+                'poopies.html')
+        self.assertEquals(util.fileops.get_basename('raw'), 'raw')
+        self.assertEquals(util.fileops.get_basename('home/brandon/test'), 'test')
+
+    def test_get_parent_dir(self):
+        """
+        Ensure fileops.get_parent_dir works as intended
+        """
+        self.assertEquals(util.fileops.get_parent_dir('/home/brandon/test/test.py'),
+                '/home/brandon/test')
+        self.assertEquals(util.fileops.get_parent_dir('test.html'), '')

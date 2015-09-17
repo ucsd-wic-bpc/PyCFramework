@@ -37,7 +37,7 @@ def join_path(path, *parts):
     """
     Joins the path with a list of parts
     """
-    return os.path.join(path, parts)
+    return os.path.join(path, *parts)
 
 def get_files_in_dir(path: str, recursive: bool=False) -> list:
     """
