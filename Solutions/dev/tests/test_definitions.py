@@ -31,20 +31,21 @@ class TestDefinitionsUnit(unittest.TestCase):
         """
         
         # Before doing anything, definitionsDict should be None and load called
+        definitionsObject = Definitions(None)
         def setDefDict():
-            Definitions._definitionsDict = {}
+            definitionsObject._definitionsDict = {}
         mocked_load_definitions.side_effect = setDefDict
-        self.assertEqual(Definitions.get_value('invalidKey'), None)
+        self.assertEqual(definitionsObject.get_value('invalidKey'), None)
         mocked_load_definitions.assert_called_with()
 
         # With a good definitions dict, ensure a key inside the dict returns val
         mocked_load_definitions.side_effect = None
-        Definitions._definitionsDict = {
+        definitionsObject._definitionsDict = {
                                             'key1' : 'val1',
                                             'key2' : 'val2'
                                        }
-        self.assertEqual(Definitions.get_value('key1'), 'val1')
-        self.assertEqual(Definitions.get_value('nonkey'), None)
+        self.assertEqual(definitionsObject.get_value('key1'), 'val1')
+        self.assertEqual(definitionsObject.get_value('nonkey'), None)
         Definitions._definitionsDict = None
 
     @mock.patch.object(Definitions, 'get_definitions_filepath')
@@ -56,8 +57,9 @@ class TestDefinitionsUnit(unittest.TestCase):
         mocked_get_def_filepath.return_value = 'fakepath'
         mocked_fileops.get_json_dict.return_value = {'hello' : 'hi'}
 
-        Definitions.load_definitions()
-        self.assertEqual(Definitions._definitionsDict, {'hello' : 'hi'})
+        definitionsObject = Definitions(None)
+        definitionsObject.load_definitions()
+        self.assertEqual(definitionsObject._definitionsDict, {'hello' : 'hi'})
         mocked_fileops.get_json_dict.assert_called_with('fakepath')
 
     @mock.patch('util.definitions.fileops')
@@ -68,7 +70,7 @@ class TestDefinitionsUnit(unittest.TestCase):
         mocked_fileops.join_path.return_value = 'hi'
         mockedPathMapper = mock.MagicMock()
         mockedPathMapper.get_config_path.return_value = 'lol'
-        self.assertEqual(Definitions.get_definitions_filepath(mockedPathMapper), 'hi')
+        self.assertEqual(Definitions(mockedPathMapper).get_definitions_filepath(), 'hi')
         mocked_fileops.join_path.assert_called_with('lol', Definitions.DEFINITIONS_FILE)
 
     @mock.patch.object(Definitions, 'get_value')
@@ -76,7 +78,7 @@ class TestDefinitionsUnit(unittest.TestCase):
     def test_get_value_matcher(self, mocked_matcher_from_var_string, mocked_get_value):
         mocked_get_value.return_value = 'hello'
         mocked_matcher_from_var_string.return_value = 'hi'
-        self.assertEqual(Definitions.get_value_matcher('key'), 'hi')
+        self.assertEqual(Definitions(None).get_value_matcher('key'), 'hi')
         mocked_get_value.assert_called_with('key')
         mocked_matcher_from_var_string.assert_called_with('hello')
 
@@ -91,5 +93,5 @@ class TestDefinitionsFunctional(unittest.TestCase):
         """
         pathMapper = mock.MagicMock()
         pathMapper.get_config_path.return_value = 'configPath'
-        self.assertEqual(Definitions.get_definitions_filepath(pathMapper),
+        self.assertEqual(Definitions(pathMapper).get_definitions_filepath(),
                 os.path.join('configPath', Definitions.DEFINITIONS_FILE))

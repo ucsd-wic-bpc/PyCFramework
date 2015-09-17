@@ -8,7 +8,7 @@
 	 "output_file_ending"       : "out",
 	 "writers_directory"        : ".writers",
 	 "user_output_directory"    : "output",
-	 "solution_naming"          : "problem{problem}",
+	 "solution_naming"          : "Problem{problem}",
 	 "html_diff_naming"         : "problem{problem}_{caseType}_{language}.diff.html",
-	 "problem_count"            : 3
+	 "problem_count"            : 15
 }
