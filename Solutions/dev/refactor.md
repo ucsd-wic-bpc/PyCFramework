@@ -17,6 +17,9 @@ Tasks
 * Create an 'IndividualCase' class
 	* Input 
 	* Correct output
+* Create an Executor class, which handles execution of solutions
+
+### DONE ###
 * Create a 'Solution' class
 	* Problem Number
 	* Solution Path
@@ -35,4 +38,6 @@ Tasks
 	* Run Command
 	* Run Arguments
 * Create a 'Definitions' Class
+* Create a 'Variables' Class
+* Create useful utility classes
 	
