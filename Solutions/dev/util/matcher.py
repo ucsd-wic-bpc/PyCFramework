@@ -27,7 +27,7 @@ class Matcher:
         if matchObject is None:
             return None
 
-        groupDict = matchObject.groupdict
+        groupDict = matchObject.groupdict()
         if not var in groupDict:
             return None
         else:

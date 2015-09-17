@@ -37,7 +37,7 @@ class Solution:
         Checks to see if basename of file matches solution naming scheme from definitions
         """
         filename = fileops.get_basename_less_extension(path)
-        return Definitions.get_value_matcher(NAMING_DEFINITION_KEY).matches(path)
+        return Definitions.get_value_matcher(Solution.NAMING_DEFINITION_KEY).matches(filename)
 
     @staticmethod
     def load_from_path(path):
@@ -46,9 +46,10 @@ class Solution:
         """
         newSolution = Solution(solutionPath=path)
         filename = fileops.get_basename_less_extension(path)
-        filenameMatcher = Definitions.get_value_matcher(NAMING_DEFINITION_KEY)
+        filenameMatcher = Definitions.get_value_matcher(Solution.NAMING_DEFINITION_KEY)
         newSolution.problemNumber = filenameMatcher.get_variable_value(filename, 
                 Variables.get_variable_key_name(Variables.NAME_PROBLEM_NUMBER))
+        from util.writer import Writer
         newSolution.solutionWriter = fileops.get_basename(fileops.get_parent_dir(path))
         newSolution.solutionLanguage = Languages.get_language_from_extension(
                 fileops.get_extension(path))

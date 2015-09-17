@@ -44,7 +44,7 @@ def get_files_in_dir(path: str, recursive: bool=False) -> list:
     Returns a list of filepaths within a directory. Also includes child directories if recursive
     """
     if not recursive:
-        return [filePath for filePath in os.listdir(path) if os.path.isfile(filePath)]
+        return [join_path(path, filePath) for filePath in os.listdir(path) if os.path.isfile(join_path(path, filePath))]
     else:
         workingFileList = get_files_in_dir(path, recursive=False)
         for filePath in os.listdir(path):
