@@ -1,2 +1,4 @@
 *.swp*
 *pycache*
+*.coverage
+*.noseids
