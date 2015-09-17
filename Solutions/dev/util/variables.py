@@ -9,46 +9,46 @@
 from util import fileops
 
 class Variables:
-    _variablesDict = None
     VARIABLES_FILE = 'variables.json'
 
     #### VARAIBLE NAMES
     NAME_PROBLEM_NUMBER = 'problem_number'
 
-    @classmethod
-    def load_variables(cls):
+    def __init__(self, pathMapper):
+        self._variablesDict = None
+        self._pathMapper = pathMapper
+
+    def load_variables(self):
         """
         Load the variables dictionary from the variables file
         """
-        cls._variablesDict = fileops.get_json_dict(Variables.get_variables_filepath())
+        self._variablesDict = fileops.get_json_dict(self.get_variables_filepath())
 
-    @staticmethod
-    def get_variables_filepath(pathMapper):
+    def get_variables_filepath(self):
         """
         Gets the filepath of the variables file based on a given path mapper
         """
-        return fileops.join_path(pathMapper.get_config_path, VARIABLES_FILE)
+        return fileops.join_path(self._pathMapper.get_config_path(), 
+                Variables.VARIABLES_FILE)
 
-    @classmethod
-    def get_variable_key(cls, variableName: str) -> str:
+    def get_variable_key(self, variableName: str) -> str:
         """
         Gets a {variable}-style key for a certain variable name, None if nonexistent
         """
-        if cls._variablesDict is None:
-            cls.load_variables()
+        if self._variablesDict is None:
+            self.load_variables()
 
-        if not variableName in cls._variablesDict:
+        if not variableName in self._variablesDict:
             return None
         else:
-            return cls._variablesDict[variableName]
+            return self._variablesDict[variableName]
 
-    @classmethod
-    def get_variable_key_name(cls, variableName: str) -> str:
+    def get_variable_key_name(self, variableName: str) -> str:
         """
         Gets a {variable}-style key without {} for a certain variable name. 
         None if nonexistent
         """
-        variableKey = cls.get_variable_key(variableName)
+        variableKey = self.get_variable_key(variableName)
 
         # Parse out the {} if they exist. If not, return just the var
         if not variableKey is None and variableKey[0] == '{' and variableKey[-1] == '}':

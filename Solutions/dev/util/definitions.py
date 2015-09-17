@@ -9,39 +9,38 @@ from util import fileops
 from util.matcher import Matcher
 
 class Definitions:
-    _definitionsDict = None
     DEFINITIONS_FILE = 'definitions.json'
 
-    @classmethod
-    def get_value(cls, key):
+    def __init__(self, pathMapper):
+        self._definitionsDict = None
+        self._pathMapper = pathMapper
+
+    def get_value(self, key):
         """
         Gets the value of the definition given by key
         """
-        if cls._definitionsDict is None:
-            cls.load_definitions()
+        if self._definitionsDict is None:
+            self.load_definitions()
 
-        if not key in cls._definitionsDict:
+        if not key in self._definitionsDict:
             return None
         else:
-            return cls._definitionsDict[key]
+            return self._definitionsDict[key]
 
-    @classmethod
-    def load_definitions(cls):
+    def load_definitions(self):
         """
         Load the definitions dictionary from the definitions file
         """
-        cls._definitionsDict = fileops.get_json_dict(Definitions.get_definitions_filepath())
+        self._definitionsDict = fileops.get_json_dict(self.get_definitions_filepath())
 
-    @staticmethod
-    def get_definitions_filepath(pathMapper):
+    def get_definitions_filepath(self):
         """
-        Gets the filepath of the definitions file based on a given path mapper
+        Gets the filepath of the definitions file based on the path mapper
         """
-        return fileops.join_path(pathMapper.get_config_path(), Definitions.DEFINITIONS_FILE)
+        return fileops.join_path(self._pathMapper.get_config_path(), Definitions.DEFINITIONS_FILE)
 
-    @classmethod
-    def get_value_matcher(cls, key):
+    def get_value_matcher(self, key):
         """
         Gets a matcher object for the definition value given by key
         """
-        return Matcher.from_variable_string(cls.get_value(key))
+        return Matcher.from_variable_string(self.get_value(key))
