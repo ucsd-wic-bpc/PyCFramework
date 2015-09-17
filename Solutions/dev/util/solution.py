@@ -8,6 +8,7 @@
 from util import fileops
 from util.definitions import Definitions
 from util.variables import Variables
+from util.language import Languages
 
 class Solution:
     NAMING_DEFINITION_KEY = 'solution_naming'
@@ -49,3 +50,7 @@ class Solution:
         newSolution.problemNumber = filenameMatcher.get_variable_value(filename, 
                 Variables.get_variable_key_name(Variables.NAME_PROBLEM_NUMBER))
         newSolution.solutionWriter = fileops.get_basename(fileops.get_parent_dir(path))
+        newSolution.solutionLanguage = Languages.get_language_from_extension(
+                fileops.get_extension(path))
+
+        return newSolution

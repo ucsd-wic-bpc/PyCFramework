@@ -65,6 +65,12 @@ def get_basename(path: str) -> str:
     """
     return os.path.basename(path)
 
+def get_extension(path: str) -> str:
+    """
+    Returns the extension of the file given by path
+    """
+    return os.path.splitext(os.path.basename(path))[1][1:]
+
 def get_parent_dir(path: str) -> str:
     """
     Returns the parent directory of the given path

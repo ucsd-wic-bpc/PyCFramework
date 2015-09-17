@@ -7,6 +7,7 @@
 # languages.json
 ################################################################################
 from util import fileops
+from util.pathmapper import PathMapper
 
 class Language:
     _languagesCache = None # A languages cache mapping extension to Language
@@ -57,21 +58,19 @@ class Language:
 
 class Languages:
     LANGUAGES_FILE = 'languages.json'
+    _languagesDict = None
 
-    def __init__(self, pathMapper):
-        self._languagesDict = None
-        self._pathMapper = pathMapper
-
-    def load_languages(self):
+    @classmethod
+    def load_languages(cls):
         """
         Loads the languages into cache from the languages file
         """
-        if self._languagesDict = None:
-            self._languagesDict = {}
+        if cls._languagesDict is None:
+            cls._languagesDict = {}
 
-        languagesItems = fileops.get_json_dict(self.get_languages_filepath())
+        languagesItems = fileops.get_json_dict(cls.get_languages_filepath())
         for languageBlock in languagesItems['languages']:
-            (self._languagesDict[Languages.get_prevelent_extension_from_block(languageBlock)] = 
+            cls._languagesDict[Languages.get_prevelent_extension_from_block(languageBlock)] = (
                     Language.load_from_dict(languageBlock))
 
     @staticmethod
@@ -81,20 +80,22 @@ class Languages:
         else:
             return block[Language.RUN_EXTENSION_KEY]
     
-    def get_languages_filepath(self):
+    @classmethod
+    def get_languages_filepath(cls):
         """
         Gets the filepath of the languages file based on the path mapper
         """
-        return fileops.join_path(self._pathMapper.get_config_path(), Languages.LANGUAGES_FILE)
+        return fileops.join_path(PathMapper.get_config_path(), Languages.LANGUAGES_FILE)
 
-    def get_language_from_extension(self, extension: str):
+    @classmethod
+    def get_language_from_extension(cls, extension: str):
         """
         Gets the language object corresponding to the given extension
         """
-        if self._languagesDict is None:
-            self.load_languages()
+        if cls._languagesDict is None:
+            cls.load_languages()
 
-        if extension in self._languagesDict:
-            return self._languagesDict[extension]
+        if extension in cls._languagesDict:
+            return cls._languagesDict[extension]
         else:
             return None
