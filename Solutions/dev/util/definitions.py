@@ -6,6 +6,7 @@
 # Contains information for parsing the definitions file
 ################################################################################
 from util import fileops
+from util.matcher import Matcher
 
 class Definitions:
     _definitionsDict = None
@@ -36,7 +37,7 @@ class Definitions:
         """
         Gets the filepath of the definitions file based on a given path mapper
         """
-        return fileops.join_path(pathMapper.get_config_path, DEFINITIONS_FILE)
+        return fileops.join_path(pathMapper.get_config_path(), Definitions.DEFINITIONS_FILE)
 
     @classmethod
     def get_value_matcher(cls, key):
