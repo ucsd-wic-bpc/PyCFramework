@@ -6,6 +6,7 @@
 # This file contains all information pertaining to solution writers
 ################################################################################
 from util import fileops
+from util.solution import Solution
 
 class Writer:
     DATAFILE_PATH = 'data.json'
@@ -49,8 +50,8 @@ class Writer:
         else:
             self._solutions[solution.problemNumber].append(solution)
 
-    @staticmethod
-    def load_from_path(path):
+    @classmethod
+    def load_from_path(cls, path):
         """
         Loads a writer and all their solutions from a specified path
         """
@@ -61,19 +62,21 @@ class Writer:
         loadedWriter = Writer(writerPath=path)
 
         # Load the user data from the data file
-        dataDictionary = fileops.get_json_dict(loadedWriter._get_datafile_path)
+        dataDictionary = fileops.get_json_dict(loadedWriter._get_datafile_path())
 
         # Populate the data if available
         # Load name
-        if DATAFILE_NAME_FIELD in dataDictionary:
-            loadedWriter.name = dataDictionary[DATAFILE_NAME_FIELD]
+        if cls.DATAFILE_NAME_FIELD in dataDictionary:
+            loadedWriter.name = dataDictionary[cls.DATAFILE_NAME_FIELD]
 
         # Load email
-        if DATAFILE_EMAIL_FIELD in dataDictionary:
-            loadedWriter.email = dataDictionary[DATAFILE_EMAIL_FIELD]
+        if cls.DATAFILE_EMAIL_FIELD in dataDictionary:
+            loadedWriter.email = dataDictionary[cls.DATAFILE_EMAIL_FIELD]
 
         # Load all solutions
         for possibleSolution in fileops.get_files_in_dir(path):
-            if Solution.is_solution_file(path):
-                solutionObject = Solution.load_from_path(path)
+            if Solution.is_solution_file(possibleSolution):
+                solutionObject = Solution.load_from_path(possibleSolution)
                 loadedWriter._add_solution(solutionObject)
+
+        return loadedWriter
