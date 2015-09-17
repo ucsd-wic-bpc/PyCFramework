@@ -10,8 +10,6 @@ from util import fileops
 from util.pathmapper import PathMapper
 
 class Language:
-    _languagesCache = None # A languages cache mapping extension to Language
-
     NAME_KEY = 'language'
     COMPILE_EXTENSION_KEY = 'compileExtension'
     COMPILE_COMMAND_KEY = 'compileCommand'
@@ -70,11 +68,11 @@ class Languages:
 
         languagesItems = fileops.get_json_dict(cls.get_languages_filepath())
         for languageBlock in languagesItems['languages']:
-            cls._languagesDict[Languages.get_prevelent_extension_from_block(languageBlock)] = (
+            cls._languagesDict[Languages.get_prevalent_extension_from_block(languageBlock)] = (
                     Language.load_from_dict(languageBlock))
 
     @staticmethod
-    def get_prevelent_extension_from_block(block):
+    def get_prevalent_extension_from_block(block):
         if Language.COMPILE_EXTENSION_KEY in block:
             return block[Language.COMPILE_EXTENSION_KEY]
         else:
