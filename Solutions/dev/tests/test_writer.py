@@ -8,6 +8,7 @@
 import unittest
 from util.writer import Writer
 from util.solution import Solution
+from util.language import Languages
 from unittest import mock
 
 class TestWriter(unittest.TestCase):
@@ -85,6 +86,7 @@ class TestWriter(unittest.TestCase):
         self.assertEqual(testWriter._solutions, {5: [mockedSolution, mockedSolution],
                                                  7: [mockedSecondSolution]})
 
+    @mock.patch.object(Languages, 'is_prevalent_extension')
     @mock.patch.object(Writer, '_add_solution')
     @mock.patch.object(Solution, 'load_from_path')
     @mock.patch.object(Solution, 'is_solution_file')
@@ -92,7 +94,7 @@ class TestWriter(unittest.TestCase):
     @mock.patch('util.writer.fileops')
     def test_load_from_path(self, mocked_fileops, mocked_writer_get_datafile,
             mocked_solution_is_solution_file, mocked_solution_load_path,
-            mocked_writer_add_sol):
+            mocked_writer_add_sol, mocked_lang_is_prevalent_ext):
         """
         Ensure Writer.load_from_path properly assembles a Writer object
         """
@@ -109,6 +111,7 @@ class TestWriter(unittest.TestCase):
                                                      'email': 'brandon@bz.com'}
         mocked_fileops.get_files_in_dir.return_value = ['file1', 'file2']
         mocked_solution_is_solution_file.return_value = True
+        mocked_lang_is_prevalent_ext.return_value = True
         mocked_solution_load_path.return_value = 'sol'
 
         newWriter = Writer.load_from_path('path')

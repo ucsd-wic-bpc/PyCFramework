@@ -7,6 +7,7 @@
 ################################################################################
 from util import fileops
 from util.solution import Solution
+from util.language import Languages
 
 class Writer:
     DATAFILE_PATH = 'data.json'
@@ -76,6 +77,9 @@ class Writer:
         # Load all solutions
         for possibleSolution in fileops.get_files_in_dir(path):
             if Solution.is_solution_file(possibleSolution):
+                if not Languages.is_prevalent_extension(fileops.get_extension(possibleSolution)):
+                    continue
+
                 solutionObject = Solution.load_from_path(possibleSolution)
                 loadedWriter._add_solution(solutionObject)
 

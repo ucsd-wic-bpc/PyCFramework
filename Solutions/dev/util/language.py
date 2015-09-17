@@ -79,6 +79,16 @@ class Languages:
             return block[Language.RUN_EXTENSION_KEY]
     
     @classmethod
+    def is_prevalent_extension(cls, extension: str) -> bool:
+        """
+        Checks to see if a given extension belongs to a source file
+        """
+        if cls._languagesDict is None:
+            cls.load_languages()
+
+        return extension in cls._languagesDict
+
+    @classmethod
     def get_languages_filepath(cls):
         """
         Gets the filepath of the languages file based on the path mapper
