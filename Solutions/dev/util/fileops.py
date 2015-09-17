@@ -48,8 +48,8 @@ def get_files_in_dir(path: str, recursive: bool=False) -> list:
     else:
         workingFileList = get_files_in_dir(path, recursive=False)
         for filePath in os.listdir(path):
-            if os.path.isdir(filePath):
-                workingFileList.extend(get_files_in_dir(filePath, recursive=True))
+            if os.path.isdir(join_path(path, filePath)):
+                workingFileList.extend(get_files_in_dir(join_path(path, filePath), recursive=True))
 
         return workingFileList
 

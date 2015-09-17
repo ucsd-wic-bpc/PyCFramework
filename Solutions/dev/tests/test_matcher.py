@@ -47,10 +47,10 @@ class TestMatcher(unittest.TestCase):
 
         matchReturn = unittest.mock.MagicMock()
         testMatcher._pattern.match.return_value = matchReturn
-        matchReturn.groupdict = {'var' : 'lol'}
+        matchReturn.groupdict.return_value = {'var' : 'lol'}
         self.assertEquals(testMatcher.get_variable_value('string', 'var'), 'lol')
         testMatcher._pattern.match.assert_called_with('string')
 
-        matchReturn.groupdict = {'var2' : 'lol'}
+        matchReturn.groupdict.return_value = {'var2' : 'lol'}
         self.assertEquals(testMatcher.get_variable_value('string', 'var'), None)
         testMatcher._pattern.match.assert_called_with('string')

@@ -121,10 +121,11 @@ class TestFileOps(unittest.TestCase):
         Ensure a nonrecursive fileops.get_files_in_dir returns only the files in the parent dir
         """
         mocked_fileops_os.listdir.return_value = ['file1', 'file2', 'file3', 'dir1']
-        mocked_fileops_os_path.isfile.side_effect = lambda fileName: False if fileName == 'dir1' else True
-        self.assertEquals(util.fileops.get_files_in_dir('path'), ['file1', 'file2', 'file3'])
+        mocked_fileops_os_path.isfile.side_effect = lambda fileName: False if fileName == 'path/dir1' else True
+        mocked_fileops_os_path.join.side_effect = lambda x, *y: os.path.join(x, *y)
+        self.assertEquals(util.fileops.get_files_in_dir('path'), ['path/file1', 'path/file2', 'path/file3'])
         mocked_fileops_os.listdir.assert_called_with('path')
-        for fileItem in ['file1', 'file2', 'file3', 'dir1']:
+        for fileItem in ['path/file1', 'path/file2', 'path/file3', 'path/dir1']:
             mocked_fileops_os_path.isfile.assert_any_call(fileItem)
 
     @unittest.mock.patch('util.fileops.os.path')
@@ -135,13 +136,16 @@ class TestFileOps(unittest.TestCase):
         """
         mocked_fileops_os.listdir.side_effect = lambda path: (['file1', 'file2', 'file3', 'dir1'] if path == 'path'
                                                         else ['file4', 'file5', 'file6'])
-        mocked_fileops_os_path.isfile.side_effect = lambda fileName: False if fileName == 'dir1' else True
-        mocked_fileops_os_path.isdir.side_effect = lambda fileName: True if fileName == 'dir1' or fileName == 'path' else False
+        mocked_fileops_os_path.isfile.side_effect = lambda fileName: False if fileName == 'path/dir1' else True
+        mocked_fileops_os_path.isdir.side_effect = lambda fileName: True if fileName == 'path/dir1' or fileName == 'path' else False
+        mocked_fileops_os_path.join.side_effect = lambda x, *y: os.path.join(x, *y)
         self.assertEquals(util.fileops.get_files_in_dir('path', recursive=True), 
-                ['file1', 'file2', 'file3', 'file4', 'file5', 'file6'])
+                ['path/file1', 'path/file2', 'path/file3', 'path/dir1/file4', 
+                    'path/dir1/file5', 'path/dir1/file6'])
         mocked_fileops_os.listdir.assert_any_call('path')
-        mocked_fileops_os.listdir.assert_any_call('dir1')
-        for fileItem in ['file1', 'file2', 'file3', 'dir1', 'file4', 'file5', 'file6']:
+        mocked_fileops_os.listdir.assert_any_call('path/dir1')
+        for fileItem in ['path/file1', 'path/file2', 'path/file3', 'path/dir1', 
+                'path/dir1/file4', 'path/dir1/file5', 'path/dir1/file6']:
             mocked_fileops_os_path.isfile.assert_any_call(fileItem)
 
     def test_get_basename_less_extension(self):
