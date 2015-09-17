@@ -10,10 +10,6 @@ from util import fileops
 class PathMapper:
     CONFIG_DIR = 'conf'
 
-    _definitionsObject = None
-    _languagesObject = None
-    _variablesObject = None
-
     _rootPath = None
 
     @classmethod
