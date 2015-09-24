@@ -20,6 +20,10 @@ class Solution:
         self.solutionWriter = solutionWriter
         self.solutionLanguage = solutionLanguage
 
+    def __str__(self):
+        return "Problem {} written in {}".format( str(self.problemNumber), 
+                self.solutionLanguage.name)
+
     def get_output(self) -> str:
         """
         Runs the solution file given by self._path by delegating to its languages execute.

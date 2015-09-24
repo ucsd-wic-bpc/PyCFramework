@@ -15,25 +15,55 @@ class TestRunner(unittest.TestCase):
     # Mary wants to utilize PyCFramework. She doesnt know where to begin.
     # She types ./runner.py without arguments in hopes of a help message
     def test_can_be_run_directly(self):
+        """
+        Ensure runner.py can be run without typing `python` first
+        """
         with open('runner.py') as openRunner:
             self.assertEquals(openRunner.readline()[:-1], '#!/usr/bin/env python3')
 
     def test_does_return_help_message_no_args(self):
+        """
+        Ensure providing no arguments provides a help message
+        """
         output = StringIO()
-        runner.main([],out=output)
+        runner.main([], out=output)
         runnerOutput = output.getvalue().strip()
         self.assertIn('usage:', runnerOutput)
 
-    # Mary may also be advanced on some days, where she types -h for help
+    # Sometimes Mary is advanced and uses the help option
+    def test_does_print_help_with_h_option(self):
+        """
+        Ensure providing --h prints the help message
+        """
+        output = StringIO()
+        runner.main(['--h'], out=output)
+        runnerOutput = output.getvalue().strip()
+        self.assertIn('usage:', runnerOutput)
 
     # After learning how to use the software, she wants to see the problems that
     # she has completed. However, she has not yet created her user. 
     # She types: ./runner.py --listWriter Mary
     # She receives: Error: Mary does not exist!
+    def test_list_no_user_prints_error(self):
+        """
+        Ensure --listWriter with an invalid user prints an error
+        """
+        output = StringIO()
+        runner.main(['--listWriter', '198hoaifnaju08125'], out=output)
+        runnerOutput = output.getvalue().strip()
+        self.assertIn('Error:', runnerOutput)
 
     # She then creates the writer.
     # She types ./runner.py --createWriter Mary
     # She receives: No email specified
+    def test_create_writer_needs_email(self):
+        """
+        Ensure --createWriter prints error if no email is provided
+        """
+        output = StringIO()
+        runner.main(['--createWriter', '19571241'], out=output)
+        runnerOutput = output.getvalue().strip()
+        self.assertIn('Error:', runnerObject)
 
     # She types ./runner.py --createWriter Mary --email mary@gmail.com
     # She receives: No name specified

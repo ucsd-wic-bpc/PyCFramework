@@ -8,6 +8,7 @@
 from util import fileops
 from util.solution import Solution
 from util.language import Languages
+from util.pathmapper import PathMapper
 
 class Writer:
     DATAFILE_PATH = 'data.json'
@@ -37,7 +38,7 @@ class Writer:
         Get list of all user completed solutions
         """
         totalSolutions = []
-        for solutionList in [solutions for problemNumber, solutions in self._solutions.items()]:
+        for solutionList in [self._solutions[problemNumber] for problemNumber in sorted(self._solutions)]:
             totalSolutions.extend(solutionList)
 
         return totalSolutions
@@ -47,9 +48,9 @@ class Writer:
         Add a provided solution to the solution list
         """
         if not solution.problemNumber in self._solutions:
-            self._solutions[solution.problemNumber] = [solution]
+            self._solutions[int(solution.problemNumber)] = [solution]
         else:
-            self._solutions[solution.problemNumber].append(solution)
+            self._solutions[int(solution.problemNumber)].append(solution)
 
     @classmethod
     def load_from_path(cls, path):
@@ -84,3 +85,11 @@ class Writer:
                 loadedWriter._add_solution(solutionObject)
 
         return loadedWriter
+
+    @classmethod
+    def load_from_folder(cls, folderName):
+        """
+        Loads a writer from their folder utilizing the pathmapper
+        """
+        return cls.load_from_path(fileops.join_path(PathMapper._rootPath, folderName))
+
