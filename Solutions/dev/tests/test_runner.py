@@ -49,9 +49,9 @@ class TestRunner(unittest.TestCase):
         Ensure --listWriter with an invalid user prints an error
         """
         output = StringIO()
-        runner.main(['--listWriter', '198hoaifnaju08125'], out=output)
+        runner.main(['--listWriter', 'cheesemonster'], out=output)
         runnerOutput = output.getvalue().strip()
-        self.assertIn('Error:', runnerOutput)
+        self.assertIn('Error: cheesemonster is an invalid Writer', runnerOutput)
 
     # She then creates the writer.
     # She types ./runner.py --createWriter Mary
@@ -63,7 +63,7 @@ class TestRunner(unittest.TestCase):
         output = StringIO()
         runner.main(['--createWriter', '19571241'], out=output)
         runnerOutput = output.getvalue().strip()
-        self.assertIn('Error:', runnerObject)
+        self.assertIn('Error: No email specified', runnerOutput)
 
     # She types ./runner.py --createWriter Mary --email mary@gmail.com
     # She receives: No name specified

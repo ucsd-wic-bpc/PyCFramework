@@ -18,6 +18,9 @@ def parse_arguments(arguments, output=sys.stdout):
     # Define a custom class that prints help to the output
     class customArgParse(argparse.ArgumentParser):
 
+        def __init__(self, **kwargs):
+            super(customArgParse, self).__init__(kwargs, add_help=False)
+
         # Override to print help to output
         def print_help(self, file=None):
             self._print_message(self.format_help(), output)
@@ -35,12 +38,18 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--name', help='The name of the writer being operated on')
     argParser.add_argument('--email', help='The email of the writer being operated on')
     argParser.add_argument('--listWriter', help='List the problems that a writer has completed')
+    argParser.add_argument('--help', action='store_true')
 
     if len(arguments) == 0:
         argParser.print_help()
         return None
     else:
-        return argParser.parse_args()
+        args = argParser.parse_args(arguments)
+        if args.help:
+            argParser.print_help()
+            return
+
+        return args
 
 def list_writer(writerFolder, output=sys.stdout):
     writerObject = Writer.load_from_folder(writerFolder)
