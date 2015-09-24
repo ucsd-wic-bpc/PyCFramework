@@ -19,9 +19,10 @@ class TestRunner(unittest.TestCase):
             self.assertEquals(openRunner.readline()[:-1], '#!/usr/bin/env python3')
 
     def test_does_return_help_message_no_args(self):
-        out = StringIO()
-        pass
-
+        output = StringIO()
+        runner.main([],out=output)
+        runnerOutput = output.getvalue().strip()
+        self.assertIn('usage:', runnerOutput)
 
     # Mary may also be advanced on some days, where she types -h for help
 
