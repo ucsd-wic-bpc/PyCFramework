@@ -37,6 +37,7 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser = customArgParse(description='An interface for a Programming Competition')
     argParser.add_argument('--name', help='The name of the writer being operated on')
     argParser.add_argument('--email', help='The email of the writer being operated on')
+    argParser.add_argument('--createWriter', help='Create a new writer with specified info')
     argParser.add_argument('--listWriter', help='List the problems that a writer has completed')
     argParser.add_argument('--help', action='store_true')
 
@@ -62,6 +63,15 @@ def list_writer(writerFolder, output=sys.stdout):
         for solution in writerObject.get_all_solutions():
             output.write('{}\n'.format(str(solution)))
 
+def create_writer(writerFolder, writerName, writerEmail, output=sys.stdout):
+    if writerEmail is None:
+        output.write('Error: No email specified')
+        return 0
+
+    if writerName is None:
+        output.write('Error: No name specified')
+        return 0
+
 def main(arguments, out=sys.stdout):
     args = parse_arguments(arguments, output=out)
     if args is None:
@@ -70,6 +80,10 @@ def main(arguments, out=sys.stdout):
     PathMapper.set_root_path(os.path.dirname(os.path.abspath(__name__)))
     if args.listWriter:
         list_writer(args.listWriter, output=out)
+        return 0
+
+    if args.createWriter:
+        create_writer(args.createWriter, args.name, args.email, output=out)
         return 0
 
 
