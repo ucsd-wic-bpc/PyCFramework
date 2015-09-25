@@ -7,6 +7,10 @@
 #
 # Contains the executable logic for PyCFramework
 ################################################################################
+
+# TODO: Add in 'perr'-like functionality, which makes functions return whether
+# or not they errd and set a global message string. Maybe make a separate
+# 'perror' like module
 import argparse
 import sys
 import os
