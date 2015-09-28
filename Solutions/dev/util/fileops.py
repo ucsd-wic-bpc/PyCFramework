@@ -22,6 +22,20 @@ def exists(path, fileType):
     else:
         return os.path.isdir(path)
 
+def make(path, fileType):
+    """
+    Makes the file located at the given path if it doesnt already exist
+    Returns: A boolean indicating whether the file was made
+    """
+    if exists(path, fileType):
+        return False
+
+    if fileType == FileType.FILE:
+        os.mknod(path)
+    else:
+        os.mkdir(path)
+    return True
+
 def get_json_dict(path):
     """
     Returns a dictionary for a json file if it exists, else an empty dict
@@ -32,6 +46,13 @@ def get_json_dict(path):
             dictionary = json.loads(openFile.read())
 
     return dictionary
+
+def write_json_dict(path, dictionary):
+    """
+    Writes a dictionary into a json file
+    """
+    with open(path, 'w+') as openFile:
+        openFile.write(json.dumps(dictionary))
 
 def join_path(path, *parts):
     """

@@ -29,6 +29,22 @@ class Writer:
         return 'Directory: {}\nName: {}\nEmail: {}\nSolutions: \n{}\n'.format(
                 self._path, self.name, self.email, solutionsString)
 
+    def create(self):
+        if self._path is None or self._path == '':
+            raise Exception('Cannot create writer without path')
+
+        fileops.make(self._path, fileops.FileType.DIRECTORY)
+        fileops.make(self._get_datafile_path(), fileops.FileType.FILE)
+        self._write_datafile()
+
+    def _write_datafile(self):
+        """
+        Writes the datafile for this Writer to the filesystem
+        """
+        datafileDict = {self.DATAFILE_NAME_FIELD : self.name,
+                        self.DATAFILE_EMAIL_FIELD: self.email}
+        fileops.write_json_dict(self._get_datafile_path(), datafileDict)
+
     def _get_datafile_path(self) -> str:
         """
         Return the path of the data file for this writer. 

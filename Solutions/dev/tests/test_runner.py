@@ -6,8 +6,10 @@
 # Contains tests for runner.py, the main executable script
 ################################################################################
 import unittest
+from unittest import mock
 import runner
 from io import StringIO
+from util.writer import Writer
 
 class TestRunner(unittest.TestCase):
 
@@ -80,6 +82,17 @@ class TestRunner(unittest.TestCase):
     # She types ./runner.py --createWriter Mary --email mary@gmail.com 
     #    --name Mary
     # She receives no output. User created succesfully
+    @mock.patch.object(Writer, 'create')
+    def test_create_writer(self, mocked_writer_create):
+        """
+        Ensure --createWriter calls mkdir when all correct arguments are provided
+        """
+        output = StringIO()
+        runner.main(['--createWriter', '1928', '--email', 'mary@gmail.com',
+            '--name', 'Mary Boswell'], out=output)
+        runnerOutput = output.getvalue().strip()
+        self.assertEqual('', runnerOutput)
+        mocked_writer_create.assert_called_with()
 
     # Note that Mary should later be able to delete herself with
     # ./runner.py --deleteWriter Mary

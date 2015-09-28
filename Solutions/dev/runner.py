@@ -13,6 +13,7 @@ import os
 from util.pathmapper import PathMapper
 from util.writer import Writer
 from util.perror import PyCException
+from util import fileops
 
 def parse_arguments(arguments, output=sys.stdout):
     # Define a custom class that prints help to the output
@@ -65,6 +66,13 @@ def create_writer(writerFolder, writerName, writerEmail):
 
     if writerName is None:
         raise PyCException('Error: No name specified')
+
+    newWriter = Writer(writerPath=writerFolder, writerName=writerName, 
+            writerEmail=writerEmail)
+    try:
+        newWriter.create()
+    except Exception as e:
+        raise PyCException('Error: Could not create writer')
 
 def handle_args(arguments, output=sys.stdout):
     # If arguments is None, only the help flag was provided
