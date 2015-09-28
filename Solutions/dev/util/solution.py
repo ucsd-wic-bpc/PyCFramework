@@ -21,7 +21,7 @@ class Solution:
         self.solutionLanguage = solutionLanguage
 
     def __str__(self):
-        return "Problem {} written in {}".format( str(self.problemNumber), 
+        return "Problem {} written in {}".format(str(self.problemNumber), 
                 self.solutionLanguage.name)
 
     def get_output(self) -> str:

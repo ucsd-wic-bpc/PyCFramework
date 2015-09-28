@@ -11,12 +11,13 @@
 # TODO: Add in 'perr'-like functionality, which makes functions return whether
 # or not they errd and set a global message string. Maybe make a separate
 # 'perror' like module
+
 import argparse
 import sys
 import os
 from util.pathmapper import PathMapper
 from util.writer import Writer
-
+from util.perror import PyCException
 
 def parse_arguments(arguments, output=sys.stdout):
     # Define a custom class that prints help to the output
@@ -56,40 +57,42 @@ def parse_arguments(arguments, output=sys.stdout):
 
         return args
 
-def list_writer(writerFolder, output=sys.stdout):
+def get_writer_details(writerFolder):
     writerObject = Writer.load_from_folder(writerFolder)
     if writerObject is None:
-        output.write('Error: {} is an invalid Writer\n'.format(writerFolder))
-        return 0
+        raise PyCException('Error: {} is an invalid Writer\n'.format(writerFolder))
     else:
-        output.write('Folder: {}\nName: {}\nEmail: {}\nSolutions:\n'.format(
-            writerFolder, writerObject.name, writerObject.email))
-        for solution in writerObject.get_all_solutions():
-            output.write('{}\n'.format(str(solution)))
+        return str(writerObject)
 
-def create_writer(writerFolder, writerName, writerEmail, output=sys.stdout):
+def create_writer(writerFolder, writerName, writerEmail):
     if writerEmail is None:
-        output.write('Error: No email specified')
-        return 0
+        raise PyCException('Error: No email specified')
 
     if writerName is None:
-        output.write('Error: No name specified')
-        return 0
+        raise PyCException('Error: No name specified')
+
+def handle_args(arguments, output=sys.stdout):
+    # If arguments is None, only the help flag was provided
+    if arguments is None:
+        return
+
+    if arguments.listWriter:
+        details = get_writer_details(arguments.listWriter)
+        for detail in details:
+            output.write(detail)
+
+    elif arguments.createWriter:
+        create_writer(arguments.createWriter, arguments.name, arguments.email)
+
 
 def main(arguments, out=sys.stdout):
-    args = parse_arguments(arguments, output=out)
-    if args is None:
-        return 0
-
+    # Set the path
     PathMapper.set_root_path(os.path.dirname(os.path.abspath(__name__)))
-    if args.listWriter:
-        list_writer(args.listWriter, output=out)
-        return 0
 
-    if args.createWriter:
-        create_writer(args.createWriter, args.name, args.email, output=out)
-        return 0
-
+    try:
+        handle_args(parse_arguments(arguments, output=out), output=out)
+    except PyCException as e:
+        out.write(e.message)
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

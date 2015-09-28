@@ -21,6 +21,14 @@ class Writer:
         self._path = writerPath
         self._solutions = {} 
 
+    def __str__(self):
+        solutionsString = ''
+        for solution in self.get_all_solutions():
+            solutionsString += '{}\n'.format(str(solution))
+
+        return 'Directory: {}\nName: {}\nEmail: {}\nSolutions: \n{}\n'.format(
+                self._path, self.name, self.email, solutionsString)
+
     def _get_datafile_path(self) -> str:
         """
         Return the path of the data file for this writer. 
