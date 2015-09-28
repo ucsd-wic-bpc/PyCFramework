@@ -7,11 +7,6 @@
 #
 # Contains the executable logic for PyCFramework
 ################################################################################
-
-# TODO: Add in 'perr'-like functionality, which makes functions return whether
-# or not they errd and set a global message string. Maybe make a separate
-# 'perror' like module
-
 import argparse
 import sys
 import os
@@ -35,7 +30,7 @@ def parse_arguments(arguments, output=sys.stdout):
 
         # Override to print help if invalid arg is provided
         def error(self, message):
-            output.write('Error: {0}\n'.format(message))
+            output.write('Error: {0}'.format(message))
             self.print_help()
             return
 
@@ -60,7 +55,7 @@ def parse_arguments(arguments, output=sys.stdout):
 def get_writer_details(writerFolder):
     writerObject = Writer.load_from_folder(writerFolder)
     if writerObject is None:
-        raise PyCException('Error: {} is an invalid Writer\n'.format(writerFolder))
+        raise PyCException('Error: {} is an invalid Writer'.format(writerFolder))
     else:
         return str(writerObject)
 

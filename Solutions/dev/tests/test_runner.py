@@ -67,6 +67,15 @@ class TestRunner(unittest.TestCase):
 
     # She types ./runner.py --createWriter Mary --email mary@gmail.com
     # She receives: No name specified
+    def test_create_writer_needs_name(self):
+        """
+        Ensure --createWriter prints error if no name is provided
+        """
+        output = StringIO()
+        runner.main(['--createWriter', '1928', '--email', 'mary@gmail.com'],
+                out=output)
+        runnerOutput = output.getvalue().strip()
+        self.assertIn('Error: No name specified', runnerOutput)
 
     # She types ./runner.py --createWriter Mary --email mary@gmail.com 
     #    --name Mary
