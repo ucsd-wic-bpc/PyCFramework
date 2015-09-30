@@ -10,6 +10,7 @@ from unittest import mock
 import runner
 from io import StringIO
 from util.writer import Writer
+from util.solution import Solution
 
 class TestRunner(unittest.TestCase):
 
@@ -116,6 +117,23 @@ class TestRunner(unittest.TestCase):
     # ./runner.py Mary 5
     # The problem is incorrect, so Mary receives a message indicating so
     # $ Incorrect Solution: Mary 5 Corner-Case
+    @mock.patch.object(Writer, 'load_from_folder')
+    def test_standard_functionality_incorrect(self, mocked_writer_load_from_folder):
+        """
+        Ensure that given a writer and a problem where an incorrect solution
+        is stored, things work as intended
+        """
+        mockedMary = mock.MagicMock(spec=Writer)
+        mockedSolution = mock.MagicMock(spec=Solution)
+        mockedSolution.get_output = 'babaloo'
+        mockedMary.get_solutions.return_value = [mockedSolution]
+        mocked_writer_load_from_folder.return_value = mockedMary
+
+        output = StringIO()
+        runner.main(['Mary','5'], out=output)
+        runnerOutput = output.getvalue().strip()
+        self.assertEqual(runnerOutput, 'Incorrect Solution: Mary 5 C++ Corner-Case')
+
 
     # Mary wants to see the specifics of how she failed, so she runs with the 
     # --diff option
