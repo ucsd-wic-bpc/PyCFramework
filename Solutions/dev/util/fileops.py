@@ -7,6 +7,7 @@
 ################################################################################
 import os
 import json
+import shutil
 
 def exists(path, fileType):
     """
@@ -34,6 +35,24 @@ def make(path, fileType):
         os.mknod(path)
     else:
         os.mkdir(path)
+    return True
+
+def remove(path, fileType):
+    """
+    Removes the file given by path
+    Returns: A boolean indicating whether the file was deleted
+    """
+    if not exists(path, fileType):
+        return False
+
+    if fileType == FileType.FILE:
+        os.remove(path)
+    else:
+        try:
+            shutil.rmtree(path)
+        except Exception:
+            return False
+
     return True
 
 def get_json_dict(path):

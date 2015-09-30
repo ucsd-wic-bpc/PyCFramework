@@ -31,7 +31,7 @@ def parse_arguments(arguments, output=sys.stdout):
 
         # Override to print help if invalid arg is provided
         def error(self, message):
-            output.write('Error: {0}'.format(message))
+            output.write('Error: {0}\n'.format(message))
             self.print_help()
             return
 
@@ -40,16 +40,21 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--email', help='The email of the writer being operated on')
     argParser.add_argument('--createWriter', help='Create a new writer with specified info')
     argParser.add_argument('--listWriter', help='List the problems that a writer has completed')
+    argParser.add_argument('--deleteWriter', help='Remove the specified writer')
     argParser.add_argument('--help', action='store_true')
 
     if len(arguments) == 0:
         argParser.print_help()
         return None
     else:
-        args = argParser.parse_args(arguments)
+        try:
+            args = argParser.parse_args(arguments)
+        except Exception:
+            return None
+
         if args.help:
             argParser.print_help()
-            return
+            return None
 
         return args
 
@@ -74,6 +79,13 @@ def create_writer(writerFolder, writerName, writerEmail):
     except Exception as e:
         raise PyCException('Error: Could not create writer')
 
+def delete_writer(writerFolder):
+    writerToDelete = Writer.load_from_folder(writerFolder)
+    if writerToDelete is None:
+        raise PyCException('Error: {} is an invalid writer', format(writerFolder))
+    else:
+        writerToDelete.delete()
+
 def handle_args(arguments, output=sys.stdout):
     # If arguments is None, only the help flag was provided
     if arguments is None:
@@ -86,6 +98,9 @@ def handle_args(arguments, output=sys.stdout):
 
     elif arguments.createWriter:
         create_writer(arguments.createWriter, arguments.name, arguments.email)
+
+    elif arguments.deleteWriter:
+        delete_writer(arguments.deleteWriter)
 
 
 def main(arguments, out=sys.stdout):

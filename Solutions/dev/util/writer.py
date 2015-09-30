@@ -37,6 +37,12 @@ class Writer:
         fileops.make(self._get_datafile_path(), fileops.FileType.FILE)
         self._write_datafile()
 
+    def delete(self):
+        if self._path is None or self._path == '':
+            raise Exception('Cannot delete writer without path')
+
+        fileops.remove(self._path, fileops.FileType.DIRECTORY)
+
     def _write_datafile(self):
         """
         Writes the datafile for this Writer to the filesystem

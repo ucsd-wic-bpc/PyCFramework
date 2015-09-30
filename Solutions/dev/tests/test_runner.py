@@ -96,6 +96,21 @@ class TestRunner(unittest.TestCase):
 
     # Note that Mary should later be able to delete herself with
     # ./runner.py --deleteWriter Mary
+    @mock.patch.object(Writer, 'load_from_folder')
+    @mock.patch.object(Writer, 'delete')
+    def test_delete_writer(self, mocked_writer_delete, mocked_writer_from_folder):
+        """
+        Ensure --deleteWriter calls Writer.delete when all correct arguments are provided
+        """
+        output = StringIO()
+        mockedMaryWriter = mock.MagicMock(spec=Writer)
+        mocked_writer_from_folder.return_value = mockedMaryWriter
+        runner.main(['--deleteWriter', 'Mary'], out=output)
+        runnerOutput = output.getvalue().strip()
+        self.assertEqual('', runnerOutput)
+        mocked_writer_from_folder.assert_called_with('Mary')
+        mockedMaryWriter.delete.assert_called_with()
+
 
     # Now Mary wants to test a single problem that she has completed
     # ./runner.py Mary 5
