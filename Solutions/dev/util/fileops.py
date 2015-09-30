@@ -117,6 +117,13 @@ def get_parent_dir(path: str) -> str:
     """
     return os.path.dirname(path)
 
+def get_path_with_changed_extension(path: str, newExtension:str) -> str:
+    """
+    Changes the extension of a file given at path to the newExtension
+    """
+    return path.replace('.{}'.format(get_extension(path)), newExtension)
+
+
 class FileType:
     FILE = 0
     DIRECTORY = 1

@@ -8,6 +8,12 @@
 ################################################################################
 from util import fileops
 from util.pathmapper import PathMapper
+import subprocess
+
+class ExecutionError(Exception):
+    def __init__(self, message):
+        self.message = message
+        
 
 class Language:
     NAME_KEY = 'language'
@@ -53,6 +59,39 @@ class Language:
                     if cls.RUN_ARGS_KEY in languageBlockDict else None))
 
         return languageObject
+
+    def _compile_code(self, codePath):
+        """
+        Attempts to compile the code found at the given path
+
+        Returns: The path of the compiled code object
+        """
+        compileCommand = [self._compileCommand]
+        compileCommand.extend(self._compileArguments)
+        if not subprocess.call(compileCommand) == 0:
+            raise ExecutionError('Failed to compile')
+
+        return fileops.get_path_with_changed_extension(codePath, 
+                self._runExtension)
+
+    def execute_code(self, codePath, inputFilePath):
+        """
+        Executes the code by first compiling it (if necessary), then running it,
+        then returning the output or an ExecutionError if one occurred
+        """
+        if not self._compileCommand is None:
+            codePath = self._compile_code(codePath)
+
+        runCommand = [self._runCommand]
+        runCommand.extend(self._runArguments)
+        try:
+            with open(inputFilePath) as openInput:
+                output = subprocess.check_output(runCommand, stdin=openInput).decode('utf-8')
+            return output
+        except subprocess.CalledProcessError as e:
+            raise ExecutionException('Error: Runtime Error\n{}'.format(e.output))
+        except FileNotFoundError:
+            raise ExecutionException('Error: Input file {} does not exist'.format(inputFilePath))
 
 class Languages:
     LANGUAGES_FILE = 'languages.json'
