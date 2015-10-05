@@ -42,8 +42,10 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--listWriter', help='List the problems that a writer has completed')
     argParser.add_argument('--deleteWriter', help='Remove the specified writer')
     argParser.add_argument('--help', action='store_true')
-    argParser.add_argument('writerFolder', help='The folder for the writer to operate on')
-    argParser.add_argument('problemNumber', help='The number of the problem to operate on')
+    argParser.add_argument('writerFolder', help='The folder for the writer to operate on',
+            nargs='?')
+    argParser.add_argument('problemNumber', help='The number of the problem to operate on',
+            nargs='?')
 
     if len(arguments) == 0:
         argParser.print_help()
