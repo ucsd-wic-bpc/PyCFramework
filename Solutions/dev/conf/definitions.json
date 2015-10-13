@@ -1,9 +1,10 @@
 {
 	 "test_directory"           : "cases",
 	 "finalio_directory"        : "../FinalIO",
-	 "sample_case_extension"    : "_sample",
-	 "corner_case_extension"    : "_corner",
-	 "generated_case_extension" : "_generated",
+	 "sample_case_type"         : "sample",
+	 "corner_case_type"         : "corner",
+	 "generated_case_type"      : "generated",
+         "case_naming"              : "problem{problem}_{caseType}",
 	 "input_file_ending"        : "in",
 	 "output_file_ending"       : "out",
 	 "writers_directory"        : ".writers",

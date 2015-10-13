@@ -15,6 +15,7 @@ class Variables:
 
     #### VARAIBLE NAMES
     NAME_PROBLEM_NUMBER = 'problem_number'
+    NAME_CASE_TYPE = 'case_type'
 
     @classmethod
     def load_variables(cls):
