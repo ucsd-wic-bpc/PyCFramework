@@ -134,7 +134,6 @@ class TestRunner(unittest.TestCase):
         runnerOutput = output.getvalue().strip()
         self.assertEqual(runnerOutput, 'Incorrect Solution: Mary 5 C++ Corner-Case')
 
-
     # Mary wants to see the specifics of how she failed, so she runs with the 
     # --diff option
     # ./runner.py Mary 5 --diff

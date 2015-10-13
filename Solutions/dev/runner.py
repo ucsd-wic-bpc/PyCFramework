@@ -7,35 +7,18 @@
 #
 # Contains the executable logic for PyCFramework
 ################################################################################
-import argparse
 import sys
 import os
 from util.pathmapper import PathMapper
 from util.writer import Writer
 from util.perror import PyCException
 from util import fileops
+from util.pcargparse import PCArgParseFactory
+from util import case
+from util.case import KnownCase
 
 def parse_arguments(arguments, output=sys.stdout):
-    # Define a custom class that prints help to the output
-    class customArgParse(argparse.ArgumentParser):
-
-        def __init__(self, **kwargs):
-            super(customArgParse, self).__init__(kwargs, add_help=False)
-
-        # Override to print help to output
-        def print_help(self, file=None):
-            self._print_message(self.format_help(), output)
-
-        def print_usage(self, file=None):
-            self._print_message(self.format_usage(), output)
-
-        # Override to print help if invalid arg is provided
-        def error(self, message):
-            output.write('Error: {0}\n'.format(message))
-            self.print_help()
-            return
-
-    argParser = customArgParse(description='An interface for a Programming Competition')
+    argParser = PCArgParseFactory.get_argument_parser(output)
     argParser.add_argument('--name', help='The name of the writer being operated on')
     argParser.add_argument('--email', help='The email of the writer being operated on')
     argParser.add_argument('--createWriter', help='Create a new writer with specified info')
@@ -90,7 +73,14 @@ def delete_writer(writerFolder):
     else:
         writerToDelete.delete()
 
-def handle_args(arguments, output=sys.stdout):
+def solution_passes_case(solution, case):
+    if not isinstance(case, KnownCase):
+        return True
+
+    solutionOutput = solution.get_output(case.inputContents)
+    return solutionOutput == case.outputContents
+
+def handle_optional_args(arguments, output=sys.stdout):
     # If arguments is None, only the help flag was provided
     if arguments is None:
         return
@@ -106,15 +96,53 @@ def handle_args(arguments, output=sys.stdout):
     elif arguments.deleteWriter:
         delete_writer(arguments.deleteWriter)
 
+def get_test_results(writer, problemNumber):
+    results = []
 
+    for caseProblemNumber, caseObjectList in case.get_all_cases(problemNumber=problemNumber).items():
+        problemSolutions = writer.get_solutions(caseProblemNumber)
+        for solution in problemSolutions:
+            for caseObject in caseObjectList:
+                if not solution_passes_case(solution, caseObject):
+                    results.append( 'Incorrect Solution: {} {} {} Case #{} {}\n'.format(
+                        solution.solutionWriter, solution.problemNumber,
+                        caseObject.get_case_string(), caseObject.caseNumber, solution.solutionLanguage.name))
+
+    return results
+
+def handle_positional_args(arguments, output=sys.stdout):
+    # Check if user did something wrong
+    if arguments is None or arguments.writerFolder is None:
+        PCArgParseFactory.get_argument_parser(output).print_help()
+        return
+
+    # Now we need to load the writer that the user specified
+    writer = Writer.load_from_folder(arguments.writerFolder)
+    if writer is None:
+        raise PyCException('Error: {} is an invalid writer', format(arguments.writerFolder))
+
+    # If no problem was specified, test all solutions
+    testResults = get_test_results(writer, arguments.problemNumber)
+    for result in testResults:
+        output.write(result)
+
+    
 def main(arguments, out=sys.stdout):
     # Set the path
     PathMapper.set_root_path(os.path.dirname(os.path.abspath(__name__)))
 
     try:
-        handle_args(parse_arguments(arguments, output=out), output=out)
+        parsedArgs = parse_arguments(arguments, output=out)
+        handle_optional_args(parsedArgs, output=out)
     except PyCException as e:
         out.write(e.message)
+        return 1
+
+    try:
+        handle_positional_args(parsedArgs, output=out)
+    except PyCException as e:
+        out.write(e.message)
+        return 1
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

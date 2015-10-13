@@ -7,6 +7,7 @@
 ################################################################################
 from util import fileops
 from util.variables import Variables
+from util.pathmapper import PathMapper
 from util.definitions import Definitions
 
 class CaseType:
@@ -27,6 +28,15 @@ class CaseType:
         else:
             return CaseType.GENERATED
 
+    @staticmethod
+    def to_string(caseType):
+        if caseType == CaseType.SAMPLE:
+            return 'Sample'
+        elif caseType == CaseType.CORNER_CASE:
+            return 'Corner-Case'
+        else:
+            return 'Generated'
+
 class Case:
     NAMING_DEFINITION_KEY = 'case_naming'
     CASES_JSON_KEY = 'cases'
@@ -37,12 +47,15 @@ class Case:
         self.caseNumber = caseNumber
         self.inputContents = inputContents
 
+    def get_case_string(self):
+        return CaseType.to_string(self.caseType)
+
 class KnownCase(Case):
 
     def __init__(self, caseType, problemNumber, caseNumber, inputContents, 
             outputContents):
         super().__init__(caseType, problemNumber, caseNumber, inputContents)
-        self.outputContents = outputContents
+        self.outputContents = str(outputContents)
 
     @staticmethod
     def from_case(case, outputContents):
@@ -51,17 +64,42 @@ class KnownCase(Case):
 
 
 def get_cases_from_json_file(path):
-
     # Get the problem number from the path
+    problemTypeTuple = _get_file_problemnumber_type_tuple(path)
+    return _get_cases_from_json_file_given_problem_type(path, problemTypeTuple[0],
+            problemTypeTuple[1])
+
+def _get_cases_from_json_file_given_problem_type(path, problemNumber, caseType):
+    return get_cases_from_json(fileops.get_json_dict(path), problemNumber,
+            caseType)
+
+def _get_file_problemnumber_type_tuple(path):
     filename = fileops.get_basename_less_extension(path)
     filenameMatcher = Definitions.get_value_matcher(Case.NAMING_DEFINITION_KEY)
     problemNumber = filenameMatcher.get_variable_value(filename,
             Variables.get_variable_key_name(Variables.NAME_PROBLEM_NUMBER))
     caseType = filenameMatcher.get_variable_value(filename,
             Variables.get_variable_key_name(Variables.NAME_CASE_TYPE))
+    return (int(problemNumber), CaseType.from_string(caseType))
 
-    return get_cases_from_json(fileops.get_json_dict(path), problemNumber,
-            CaseType.from_string(caseType))
+
+def _get_all_cases(directory, problemNumber=None):
+    cases = {}
+
+    for possibleCaseFile in fileops.get_files_in_dir(directory):
+        problemTypeTuple = _get_file_problemnumber_type_tuple(possibleCaseFile)
+        if not problemNumber is None and not problemTypeTuple[0] == problemNumber:
+            continue
+        if not problemTypeTuple[0] in cases:
+            cases[problemTypeTuple[0]] = []
+        cases[problemTypeTuple[0]].extend( _get_cases_from_json_file_given_problem_type(possibleCaseFile,
+            problemTypeTuple[0], problemTypeTuple[1]))
+
+    return cases
+
+def get_all_cases(problemNumber=None):
+    return _get_all_cases(fileops.join_path(PathMapper._rootPath, Definitions.get_value('test_directory')),
+            problemNumber=int(problemNumber))
 
 
 def get_cases_from_json(json, problemNumber, caseType):

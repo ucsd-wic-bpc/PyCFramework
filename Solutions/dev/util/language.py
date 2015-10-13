@@ -8,6 +8,7 @@
 ################################################################################
 from util import fileops
 from util.pathmapper import PathMapper
+from util.variables import Variables
 import subprocess
 
 class ExecutionError(Exception):
@@ -60,7 +61,53 @@ class Language:
 
         return languageObject
 
-    def _compile_code(self, codePath):
+    def execute_code(self, codePath, inputContents):
+        return AppliedLanguage.get_applied_language(codePath, self).execute_code(inputContents)
+
+class AppliedLanguage(Language):
+    # A language that's applied to a specific solution
+    _appliedLanguages = {}
+
+    def __init__(self, languageName, compileExtension=None, compileCommand=None,
+            compileArguments=None, runExtension=None, runCommand=None, 
+            runArguments=None, path=None):
+        super().__init__(languageName, compileExtension, compileCommand,
+                compileArguments, runExtension, runCommand, runArguments)
+        self._path = path
+
+    @classmethod
+    def get_applied_language(cls, solutionPath, solutionLanguage):
+        if solutionPath in cls._appliedLanguages:
+            return cls._appliedLanguages[solutionPath]
+
+        variableDictionary = {
+                Variables.get_variable_key_name(Variables.NAME_FILENAME): fileops.get_basename(solutionPath),
+                Variables.get_variable_key_name(Variables.NAME_FILENAME_LESS_EXT): fileops.get_basename_less_extension(solutionPath),
+                Variables.get_variable_key_name(Variables.NAME_DIRECTORY): fileops.get_parent_dir(solutionPath)
+                }
+
+        cls._appliedLanguages[solutionPath] = AppliedLanguage(solutionLanguage.name,
+                cls._get_formatted_str_rec(variableDictionary, solutionLanguage._compileExtension),
+                cls._get_formatted_str_rec(variableDictionary, solutionLanguage._compileCommand),
+                cls._get_formatted_str_rec(variableDictionary, solutionLanguage._compileArguments),
+                cls._get_formatted_str_rec(variableDictionary, solutionLanguage._runExtension),
+                cls._get_formatted_str_rec(variableDictionary, solutionLanguage._runCommand),
+                cls._get_formatted_str_rec(variableDictionary, solutionLanguage._runArguments),
+                solutionPath)
+
+        return cls._appliedLanguages[solutionPath]
+
+                
+    @classmethod
+    def _get_formatted_str_rec(cls, formatDict, string):
+        if isinstance(string, str):
+            return string.format(**formatDict)
+        elif isinstance(string, list):
+            for i in range(0, len(string)):
+                string[i] = AppliedLanguage._get_formatted_str_rec(formatDict, string[i])
+            return string
+
+    def _compile_code(self):
         """
         Attempts to compile the code found at the given path
 
@@ -71,27 +118,26 @@ class Language:
         if not subprocess.call(compileCommand) == 0:
             raise ExecutionError('Failed to compile')
 
-        return fileops.get_path_with_changed_extension(codePath, 
+        return fileops.get_path_with_changed_extension(self._path, 
                 self._runExtension)
 
-    def execute_code(self, codePath, inputFilePath):
+    def execute_code(self, inputContents):
         """
         Executes the code by first compiling it (if necessary), then running it,
         then returning the output or an ExecutionError if one occurred
         """
         if not self._compileCommand is None:
-            codePath = self._compile_code(codePath)
+            self._path = self._compile_code()
 
         runCommand = [self._runCommand]
         runCommand.extend(self._runArguments)
+        runCommand.append(str(inputContents))
         try:
-            with open(inputFilePath) as openInput:
-                output = subprocess.check_output(runCommand, stdin=openInput).decode('utf-8')
-            return output
+            output = subprocess.check_output(runCommand).decode('utf-8')
         except subprocess.CalledProcessError as e:
-            raise ExecutionException('Error: Runtime Error\n{}'.format(e.output))
-        except FileNotFoundError:
-            raise ExecutionException('Error: Input file {} does not exist'.format(inputFilePath))
+            raise ExecutionError('Error: Runtime Error\n{}'.format(e.output))
+
+        return output[:-1]
 
 class Languages:
     LANGUAGES_FILE = 'languages.json'

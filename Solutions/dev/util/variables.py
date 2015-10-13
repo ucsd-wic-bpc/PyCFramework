@@ -16,6 +16,9 @@ class Variables:
     #### VARAIBLE NAMES
     NAME_PROBLEM_NUMBER = 'problem_number'
     NAME_CASE_TYPE = 'case_type'
+    NAME_FILENAME = 'filename'
+    NAME_FILENAME_LESS_EXT = 'filename_less_extension'
+    NAME_DIRECTORY = 'directory'
 
     @classmethod
     def load_variables(cls):
