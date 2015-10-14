@@ -121,7 +121,6 @@ class TestLanguages(unittest.TestCase):
         """
         Ensure Languages.get_language_from_extension properly gets a language from ext
         """
-        Languages._languagesDict = None
 
         def populateDict():
             Languages._languagesDict = {'ext1' : 'lang1', 'ext2' : 'lang2'}
@@ -131,3 +130,23 @@ class TestLanguages(unittest.TestCase):
         mocked_load_languages.assert_called_with()
 
         self.assertEqual(Languages.get_language_from_extension('ext3'), None)
+
+    @mock.patch.object(Languages, 'load_languages')
+    def test_get_language_by_name(self, mocked_load_languages):
+        """
+        Ensure Languages.get_language_by_name properly gets a language from name
+        """
+        mockedLangOne = mock.MagicMock(spec=Language)
+        mockedLangTwo = mock.MagicMock(spec=Language)
+        mockedLangOne.name = 'Python'
+        mockedLangTwo.name = 'C++'
+        def populateDict():
+            Languages._languagesDict = {'ext1' :mockedLangOne, 'ext2' : mockedLangTwo}
+        mocked_load_languages.side_effect = populateDict
+
+        self.assertEqual(Languages.get_language_by_name('C++'), mockedLangTwo)
+        mocked_load_languages.assert_called_with()
+
+        self.assertEqual(Languages.get_language_by_name('non'), None)
+
+
