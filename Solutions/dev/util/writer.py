@@ -36,12 +36,13 @@ class Writer:
             self.knownLanguages[language.name] = language
 
     def add_known_language(self, languageName):
-        language = Languages.get_language_by_name(langaugeName)
+        language = Languages.get_language_by_name(languageName)
 
         if language is None:
-            raise PyCException('Language {} does not exist'.format(languageName))
+            raise PyCException('Error: {} is not a valid language'.format(languageName))
 
         self._add_known_language(language)
+        self._write_datafile()
 
     def create(self):
         if self._path is None or self._path == '':

@@ -12,7 +12,7 @@ from io import StringIO
 from util.writer import Writer
 from util.solution import Solution
 from util.case import KnownCase, CaseType
-from util.language import Language
+from util.language import Language, Languages
 
 class TestRunner(unittest.TestCase):
 
@@ -174,3 +174,22 @@ class TestRunner(unittest.TestCase):
         runnerOutput = output.getvalue().strip()
         self.assertEqual(runnerOutput, '{}\n{}'.format('Incorrect Solution: Mary 5 C++ Corner-Case #0',
             '- babaloo\n+ aokgajgls'))
+
+    # Mary wants to be able to add a programming language to her known languages.
+    # She types ./runner --addLanguage Mary --language "C+-"
+    # Since it's a typo, she receives
+    # $ Error: C+- not a valid language
+    @mock.patch.object(Writer, 'load_from_folder')
+    def test_language_add(self, mocked_writer_load_from_folder):
+        """
+        Ensure that adding a language calls the writers function
+        """
+        mockedMary = mock.MagicMock(spec=Writer)
+        mocked_writer_load_from_folder.return_value = mockedMary
+
+        output = StringIO()
+        runner.main(['--addLanguage', 'Mary', '--language', 'C+-'], out=output)
+        runnerOutput = output.getvalue().strip()
+        mocked_writer_load_from_folder.assert_called_with('Mary')
+        mockedMary.add_known_language.assert_called_with('C+-')
+
