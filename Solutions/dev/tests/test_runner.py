@@ -193,3 +193,16 @@ class TestRunner(unittest.TestCase):
         mocked_writer_load_from_folder.assert_called_with('Mary')
         mockedMary.add_known_language.assert_called_with('C+-')
 
+    # Make sure that Mary does not forget to specify the language
+    @mock.patch.object(Writer, 'load_from_folder')
+    def test_language_add_without_langs_flag(self, mocked_writer_load_from_folder):
+        """
+        Ensure that using --addLanguage with --language reminds user to use --language
+        """
+        mockedMary = mock.MagicMock(spec=Writer)
+        mocked_writer_load_from_folder.return_value = mockedMary
+
+        output = StringIO()
+        runner.main(['--addLanguage', 'Mary'], out=output)
+        runnerOutput = output.getvalue().strip()
+        self.assertEqual(runnerOutput, 'Error: Must specify a language')
