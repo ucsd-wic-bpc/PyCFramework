@@ -69,7 +69,7 @@ def create_writer(writerFolder, writerName, writerEmail):
 def delete_writer(writerFolder):
     writerToDelete = Writer.load_from_folder(writerFolder)
     if writerToDelete is None:
-        raise PyCException('Error: {} is an invalid writer', format(writerFolder))
+        raise PyCException('Error: {} is an invalid writer'.format(writerFolder))
     else:
         writerToDelete.delete()
 
@@ -80,21 +80,31 @@ def solution_passes_case(solution, case):
     solutionOutput = solution.get_output(case.inputContents)
     return solutionOutput == case.outputContents
 
-def handle_optional_args(arguments, output=sys.stdout):
+def handle_optional_args(arguments, output=sys.stdout) -> int:
+    """
+    Handles optional args given by arguments. 
+
+    :returns: 0 is args processed, 1 if no args processed
+    """
     # If arguments is None, only the help flag was provided
     if arguments is None:
-        return
+        return 0
 
     if arguments.listWriter:
         details = get_writer_details(arguments.listWriter)
         for detail in details:
             output.write(detail)
+        return 0
 
     elif arguments.createWriter:
         create_writer(arguments.createWriter, arguments.name, arguments.email)
+        return 0
 
     elif arguments.deleteWriter:
         delete_writer(arguments.deleteWriter)
+        return 0
+    
+    return 1
 
 def get_test_results(writer, problemNumber):
     results = []
@@ -104,9 +114,10 @@ def get_test_results(writer, problemNumber):
         for solution in problemSolutions:
             for caseObject in caseObjectList:
                 if not solution_passes_case(solution, caseObject):
-                    results.append( 'Incorrect Solution: {} {} {} Case #{} {}\n'.format(
+                    results.append( 'Incorrect Solution: {} {} {} {} #{}\n'.format(
                         solution.solutionWriter, solution.problemNumber,
-                        caseObject.get_case_string(), caseObject.caseNumber, solution.solutionLanguage.name))
+                        solution.solutionLanguage.name, caseObject.get_case_string(), 
+                        caseObject.caseNumber))
 
     return results
 
@@ -119,7 +130,7 @@ def handle_positional_args(arguments, output=sys.stdout):
     # Now we need to load the writer that the user specified
     writer = Writer.load_from_folder(arguments.writerFolder)
     if writer is None:
-        raise PyCException('Error: {} is an invalid writer', format(arguments.writerFolder))
+        raise PyCException('Error: {} is an invalid writer'.format(arguments.writerFolder))
 
     # If no problem was specified, test all solutions
     testResults = get_test_results(writer, arguments.problemNumber)
@@ -133,7 +144,8 @@ def main(arguments, out=sys.stdout):
 
     try:
         parsedArgs = parse_arguments(arguments, output=out)
-        handle_optional_args(parsedArgs, output=out)
+        if handle_optional_args(parsedArgs, output=out) == 0:
+            return 0
     except PyCException as e:
         out.write(e.message)
         return 1

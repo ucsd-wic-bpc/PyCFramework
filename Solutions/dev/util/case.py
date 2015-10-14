@@ -88,7 +88,7 @@ def _get_all_cases(directory, problemNumber=None):
 
     for possibleCaseFile in fileops.get_files_in_dir(directory):
         problemTypeTuple = _get_file_problemnumber_type_tuple(possibleCaseFile)
-        if not problemNumber is None and not problemTypeTuple[0] == problemNumber:
+        if not problemNumber is None and not problemTypeTuple[0] == int(problemNumber):
             continue
         if not problemTypeTuple[0] in cases:
             cases[problemTypeTuple[0]] = []
@@ -99,7 +99,7 @@ def _get_all_cases(directory, problemNumber=None):
 
 def get_all_cases(problemNumber=None):
     return _get_all_cases(fileops.join_path(PathMapper._rootPath, Definitions.get_value('test_directory')),
-            problemNumber=int(problemNumber))
+            problemNumber=problemNumber)
 
 
 def get_cases_from_json(json, problemNumber, caseType):

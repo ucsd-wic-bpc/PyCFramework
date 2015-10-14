@@ -9,4 +9,4 @@
 class PyCException(Exception):
 
     def __init__(self, message):
-        self.message = message
+        self.message = '{}\n'.format(message)
