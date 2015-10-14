@@ -15,6 +15,7 @@ class Writer:
     DATAFILE_PATH = 'data.json'
     DATAFILE_NAME_FIELD = 'name'
     DATAFILE_EMAIL_FIELD = 'email'
+    DATAFILE_LANGS_FIELD = 'languages'
 
     def __init__(self, writerEmail='', writerName='', writerPath=''):
         self.name = writerName
@@ -28,8 +29,9 @@ class Writer:
         for solution in self.get_all_solutions():
             solutionsString += '{}\n'.format(str(solution))
 
-        return 'Directory: {}\nName: {}\nEmail: {}\nSolutions: \n{}\n'.format(
-                self._path, self.name, self.email, solutionsString)
+        return 'Directory: {}\nName: {}\nEmail: {}\nKnown Languages: {}\nSolutions: \n{}\n'.format(
+                self._path, self.name, self.email, ', '.join(list(self.knownLanguages.keys())),
+                solutionsString)
 
     def _add_known_language(self, language):
         if not language.name in self.knownLanguages:
@@ -63,7 +65,8 @@ class Writer:
         Writes the datafile for this Writer to the filesystem
         """
         datafileDict = {self.DATAFILE_NAME_FIELD : self.name,
-                        self.DATAFILE_EMAIL_FIELD: self.email}
+                        self.DATAFILE_EMAIL_FIELD: self.email,
+                        self.DATAFILE_LANGS_FIELD: list(self.knownLanguages.keys())}
         fileops.write_json_dict(self._get_datafile_path(), datafileDict)
 
     def _get_datafile_path(self) -> str:
@@ -119,6 +122,11 @@ class Writer:
         # Load email
         if cls.DATAFILE_EMAIL_FIELD in dataDictionary:
             loadedWriter.email = dataDictionary[cls.DATAFILE_EMAIL_FIELD]
+
+        # Load languages
+        if cls.DATAFILE_LANGS_FIELD in dataDictionary:
+            for languageName in dataDictionary[cls.DATAFILE_LANGS_FIELD]:
+                loadedWriter.add_known_language(languageName)
 
         # Load all solutions
         for possibleSolution in fileops.get_files_in_dir(path):
