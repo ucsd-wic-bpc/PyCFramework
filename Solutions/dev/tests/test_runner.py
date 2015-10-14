@@ -149,3 +149,30 @@ class TestRunner(unittest.TestCase):
     # ./runner.py Mary 5 --diff
     # $ Incorrect Solution: Mary 5 Corner-Case
     #   <diff output>
+    @mock.patch('runner.case')
+    @mock.patch.object(Writer, 'load_from_folder')
+    def test_diff_functionality_incorrect(self, mocked_writer_load_from_folder,
+            mocked_runner_case):
+        """
+        Ensure that given a writer and a problem where an incorrect solution
+        is stored with the diff flag, diff is output
+        """
+        mockedMary = mock.MagicMock(spec=Writer)
+        mockedLanguage = mock.MagicMock(spec=Language)
+        mockedLanguage.name = 'C++'
+        mockedSolution = mock.MagicMock(spec=Solution, solutionWriter='Mary',
+                problemNumber=5, solutionLanguage=mockedLanguage)
+        mockedSolution.get_output.return_value = 'babaloo'
+        mockedMary.get_solutions.return_value = [mockedSolution]
+        mocked_writer_load_from_folder.return_value = mockedMary
+        mocked_runner_case.get_all_cases.return_value = {
+                5 : [KnownCase(CaseType.CORNER_CASE, 5, 0, 'blabla', 'aokgajgls')]
+                }
+
+        output = StringIO()
+        runner.main(['Mary','5', '--diff'], out=output)
+        runnerOutput = output.getvalue().strip()
+        self.assertEqual(runnerOutput, '{}\n{}'.format('Incorrect Solution: Mary 5 C++ Corner-Case #0',
+            '- babaloo\n+ aokgajgls'))
+
+

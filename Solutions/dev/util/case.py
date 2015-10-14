@@ -9,6 +9,7 @@ from util import fileops
 from util.variables import Variables
 from util.pathmapper import PathMapper
 from util.definitions import Definitions
+import difflib
 
 class CaseType:
     SAMPLE = 0
@@ -56,6 +57,13 @@ class KnownCase(Case):
             outputContents):
         super().__init__(caseType, problemNumber, caseNumber, inputContents)
         self.outputContents = str(outputContents)
+
+    def get_output_diff(self, otherOutput: str) -> str:
+        """
+        Returns `diff otherOutput self.outputContents`
+        """
+        return '\n'.join(difflib.ndiff(otherOutput.splitlines(),
+            self.outputContents.splitlines())) + '\n'
 
     @staticmethod
     def from_case(case, outputContents):

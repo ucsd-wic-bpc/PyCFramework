@@ -25,6 +25,7 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--listWriter', help='List the problems that a writer has completed')
     argParser.add_argument('--deleteWriter', help='Remove the specified writer')
     argParser.add_argument('--help', action='store_true')
+    argParser.add_argument('--diff', action='store_true', help='Show the diff of incorrect solutions')
     argParser.add_argument('writerFolder', help='The folder for the writer to operate on',
             nargs='?')
     argParser.add_argument('problemNumber', help='The number of the problem to operate on',
@@ -74,11 +75,12 @@ def delete_writer(writerFolder):
         writerToDelete.delete()
 
 def solution_passes_case(solution, case):
-    if not isinstance(case, KnownCase):
-        return True
-
     solutionOutput = solution.get_output(case.inputContents)
-    return solutionOutput == case.outputContents
+
+    if not isinstance(case, KnownCase):
+        return (True, solutionOutput)
+
+    return (solutionOutput == case.outputContents, solutionOutput)
 
 def handle_optional_args(arguments, output=sys.stdout) -> int:
     """
@@ -106,18 +108,20 @@ def handle_optional_args(arguments, output=sys.stdout) -> int:
     
     return 1
 
-def get_test_results(writer, problemNumber):
+def get_test_results(writer, problemNumber, includeDiffs=False):
     results = []
 
     for caseProblemNumber, caseObjectList in case.get_all_cases(problemNumber=problemNumber).items():
         problemSolutions = writer.get_solutions(caseProblemNumber)
         for solution in problemSolutions:
             for caseObject in caseObjectList:
-                if not solution_passes_case(solution, caseObject):
-                    results.append( 'Incorrect Solution: {} {} {} {} #{}\n'.format(
+                solutionResults = solution_passes_case(solution, caseObject)
+                if not solutionResults[0]:
+                    results.append( 'Incorrect Solution: {} {} {} {} #{}\n{}'.format(
                         solution.solutionWriter, solution.problemNumber,
                         solution.solutionLanguage.name, caseObject.get_case_string(), 
-                        caseObject.caseNumber))
+                        caseObject.caseNumber, 
+                        caseObject.get_output_diff(solutionResults[1]) if includeDiffs else ''))
 
     return results
 
@@ -133,7 +137,7 @@ def handle_positional_args(arguments, output=sys.stdout):
         raise PyCException('Error: {} is an invalid writer'.format(arguments.writerFolder))
 
     # If no problem was specified, test all solutions
-    testResults = get_test_results(writer, arguments.problemNumber)
+    testResults = get_test_results(writer, arguments.problemNumber, arguments.diff)
     for result in testResults:
         output.write(result)
 
