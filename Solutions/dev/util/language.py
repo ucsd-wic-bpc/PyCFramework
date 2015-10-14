@@ -192,3 +192,17 @@ class Languages:
             return cls._languagesDict[extension]
         else:
             return None
+
+    @classmethod
+    def get_language_by_name(cls, name: str):
+        """
+        Gets the language object corresponding to the given name
+        """
+        if cls._languagesDict is None:
+            cls.load_languages()
+
+        for language in cls._languagesDict.values():
+            if language.name == name:
+                return language
+
+        return None

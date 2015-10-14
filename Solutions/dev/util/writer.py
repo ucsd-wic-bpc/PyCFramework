@@ -9,6 +9,7 @@ from util import fileops
 from util.solution import Solution
 from util.language import Languages
 from util.pathmapper import PathMapper
+from util.perror import PyCException
 
 class Writer:
     DATAFILE_PATH = 'data.json'
@@ -20,6 +21,7 @@ class Writer:
         self.email = writerEmail
         self._path = writerPath
         self._solutions = {} 
+        self.knownLanguages = {} # {language.name : language}
 
     def __str__(self):
         solutionsString = ''
@@ -28,6 +30,18 @@ class Writer:
 
         return 'Directory: {}\nName: {}\nEmail: {}\nSolutions: \n{}\n'.format(
                 self._path, self.name, self.email, solutionsString)
+
+    def _add_known_language(self, language):
+        if not language.name in self.knownLanguages:
+            self.knownLanguages[language.name] = language
+
+    def add_known_language(self, languageName):
+        language = Languages.get_language_by_name(langaugeName)
+
+        if language is None:
+            raise PyCException('Language {} does not exist'.format(languageName))
+
+        self._add_known_language(language)
 
     def create(self):
         if self._path is None or self._path == '':

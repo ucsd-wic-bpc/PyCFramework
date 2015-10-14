@@ -174,5 +174,3 @@ class TestRunner(unittest.TestCase):
         runnerOutput = output.getvalue().strip()
         self.assertEqual(runnerOutput, '{}\n{}'.format('Incorrect Solution: Mary 5 C++ Corner-Case #0',
             '- babaloo\n+ aokgajgls'))
-
-
