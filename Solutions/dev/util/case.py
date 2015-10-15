@@ -115,10 +115,17 @@ def get_cases_from_json(json, problemNumber, caseType):
 
     for caseNumberStr, caseContents in json[Case.CASES_JSON_KEY].items():
         caseObject = Case(caseType, problemNumber, int(caseNumberStr), 
-                caseContents['input'])
+                _parse_output_json(caseContents['input']))
         if 'output' in caseContents:
             caseList.append(KnownCase.from_case(caseObject, caseContents['output']))
         else:
             caseList.append(caseObject)
 
     return caseList
+
+def _parse_output_json(jsonData):
+    if not isinstance(jsonData, dict):
+        return fileops.get_json_string(jsonData)
+
+    else:
+        return fileops.get_json_string([jsonData[key] for key in sorted(jsonData.keys())])

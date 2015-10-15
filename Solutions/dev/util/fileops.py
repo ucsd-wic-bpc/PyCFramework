@@ -71,7 +71,13 @@ def write_json_dict(path, dictionary):
     Writes a dictionary into a json file
     """
     with open(path, 'w+') as openFile:
-        openFile.write(json.dumps(dictionary))
+        openFile.write(get_json_string(dictionary))
+
+def get_json_string(jsonData):
+    """
+    Returns a decoded json data chunk
+    """
+    return json.dumps(jsonData)
 
 def join_path(path, *parts):
     """
