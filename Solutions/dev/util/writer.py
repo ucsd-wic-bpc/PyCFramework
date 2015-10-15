@@ -16,6 +16,7 @@ class Writer:
     DATAFILE_NAME_FIELD = 'name'
     DATAFILE_EMAIL_FIELD = 'email'
     DATAFILE_LANGS_FIELD = 'languages'
+    DATAFILE_ASSIGNED_PROBLEMS = 'assigned'
 
     def __init__(self, writerEmail='', writerName='', writerPath=''):
         self.name = writerName
@@ -23,27 +24,50 @@ class Writer:
         self._path = writerPath
         self._solutions = {} 
         self.knownLanguages = {} # {language.name : language}
+        self.assignedProblems = [] # [(problemNumber, language)]
 
     def __str__(self):
         solutionsString = ''
         for solution in self.get_all_solutions():
             solutionsString += '{}\n'.format(str(solution))
 
-        return 'Directory: {}\nName: {}\nEmail: {}\nKnown Languages: {}\nSolutions: \n{}\n'.format(
+        return 'Directory: {}\nName: {}\nEmail: {}\nKnown Languages: {}\nAssigned Problems:{}\nSolutions: \n{}\n'.format(
                 self._path, self.name, self.email, ', '.join(list(self.knownLanguages.keys())),
+                ', '.join(['{} in {}'.format(item[0], item[1]) for item in sorted(self.assignedProblems)]),
                 solutionsString)
 
     def _add_known_language(self, language):
         if not language.name in self.knownLanguages:
             self.knownLanguages[language.name] = language
 
-    def add_known_language(self, languageName):
+    def _add_known_language_from_name(self, languageName):
         language = Languages.get_language_by_name(languageName)
 
         if language is None:
             raise PyCException('Error: {} is not a valid language'.format(languageName))
 
         self._add_known_language(language)
+
+    def add_known_language(self, languageName):
+        self._add_known_language_from_name(languageName)
+        self._write_datafile()
+
+    def knows_language(self, languageName):
+        return languageName in self.knownLanguages
+
+    def add_assigned_problem(self, problemNumber, languageName):
+        self._add_assigned_problem( problemNumber, languageName)
+        self._write_datafile()
+
+    def _add_assigned_problem(self, problemNumber, languageName):
+        if not (problemNumber, languageName) in self.assignedProblems:
+            self.assignedProblems.append((problemNumber, languageName))
+
+    def get_number_assigned_problems(self):
+        return len(self.assignedProblems)
+
+    def unassign_all_problems(self):
+        self.assignedProblems = []
         self._write_datafile()
 
     def create(self):
@@ -52,6 +76,7 @@ class Writer:
 
         fileops.make(self._path, fileops.FileType.DIRECTORY)
         fileops.make(self._get_datafile_path(), fileops.FileType.FILE)
+        Writers.add_writer(self._path)
         self._write_datafile()
 
     def delete(self):
@@ -59,6 +84,7 @@ class Writer:
             raise Exception('Cannot delete writer without path')
 
         fileops.remove(self._path, fileops.FileType.DIRECTORY)
+        Writers.delete_writer(self._path)
 
     def _write_datafile(self):
         """
@@ -66,7 +92,8 @@ class Writer:
         """
         datafileDict = {self.DATAFILE_NAME_FIELD : self.name,
                         self.DATAFILE_EMAIL_FIELD: self.email,
-                        self.DATAFILE_LANGS_FIELD: list(self.knownLanguages.keys())}
+                        self.DATAFILE_LANGS_FIELD: list(self.knownLanguages.keys()),
+                        self.DATAFILE_ASSIGNED_PROBLEMS: [[item[0], item[1]] for item in self.assignedProblems]}
         fileops.write_json_dict(self._get_datafile_path(), datafileDict)
 
     def _get_datafile_path(self) -> str:
@@ -126,7 +153,12 @@ class Writer:
         # Load languages
         if cls.DATAFILE_LANGS_FIELD in dataDictionary:
             for languageName in dataDictionary[cls.DATAFILE_LANGS_FIELD]:
-                loadedWriter.add_known_language(languageName)
+                loadedWriter._add_known_language_from_name(languageName)
+
+        # Load assigned
+        if cls.DATAFILE_ASSIGNED_PROBLEMS in dataDictionary:
+            for assignedProblem in dataDictionary[cls.DATAFILE_ASSIGNED_PROBLEMS]:
+                loadedWriter._add_assigned_problem(assignedProblem[0], assignedProblem[1])
 
         # Load all solutions
         for possibleSolution in fileops.get_files_in_dir(path):
@@ -146,3 +178,61 @@ class Writer:
         """
         return cls.load_from_path(fileops.join_path(PathMapper._rootPath, folderName))
 
+    @classmethod
+    def get_all_writers(cls):
+        """
+        Returns a list of all writers
+        """
+
+class Writers:
+    """
+    Handle the .writers.json config file
+    """
+    JSON_FILE = '.writers.json'
+    writers = None
+
+    @classmethod
+    def add_writer(cls, writerName):
+        if cls.writers is None:
+            cls._load_from_config()
+
+        if not writerName in cls.writers:
+            cls.writers.append(writerName)
+
+        cls._write_file()
+
+    @classmethod
+    def delete_writer(cls, writerName):
+        if cls.writers is None:
+            cls._load_from_config()
+
+        if writerName in cls.writers:
+            cls.writers.remove(writerName)
+
+        cls._write_file()
+
+    @classmethod
+    def get_all_writers(cls):
+        if cls.writers is None:
+            cls._load_from_config()
+
+        return [Writer.load_from_folder(writerName) for writerName in cls.writers]
+
+    @classmethod
+    def _write_file(cls):
+        if cls.writers is None:
+            cls._load_from_config()
+
+        fileops.write_json_dict(cls._get_config_path(), cls.writers)
+
+    @classmethod
+    def _get_config_path(cls):
+        return fileops.join_path(PathMapper._rootPath, cls.JSON_FILE)
+
+    @classmethod
+    def _load_from_config(cls):
+        loadedContents = fileops.get_json_dict(cls._get_config_path())
+        if isinstance(loadedContents, list):
+            cls.writers = loadedContents
+        else:
+            cls.writers = []

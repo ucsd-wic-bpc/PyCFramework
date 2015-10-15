@@ -10,12 +10,14 @@
 import sys
 import os
 from util.pathmapper import PathMapper
-from util.writer import Writer
+from util.writer import Writer, Writers
 from util.perror import PyCException
 from util import fileops
 from util.pcargparse import PCArgParseFactory
 from util import case
 from util.case import KnownCase
+from util.definitions import Definitions
+from util.language import Languages
 
 def parse_arguments(arguments, output=sys.stdout):
     argParser = PCArgParseFactory.get_argument_parser(output)
@@ -26,6 +28,7 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--listWriter',help='List the problems that a writer has completed')
     argParser.add_argument('--deleteWriter', help='Remove the specified writer')
     argParser.add_argument('--addLanguage', help='Add a language to the specified writer')
+    argParser.add_argument('--assignProblems', action='store_true', help='Assign problems to writers')
     argParser.add_argument('--help', action='store_true')
     argParser.add_argument('--diff', action='store_true', help='Show the diff of incorrect solutions')
     argParser.add_argument('writerFolder', help='The folder for the writer to operate on',
@@ -39,9 +42,7 @@ def parse_arguments(arguments, output=sys.stdout):
     else:
         try:
             args = argParser.parse_args(arguments)
-        except Exception:
-            return None
-
+        except Exception: return None 
         if args.help:
             argParser.print_help()
             return None
@@ -94,6 +95,30 @@ def add_language_to_writer(writerFolder, languageName):
 
     writer.add_known_language(languageName)
 
+def assign_problems():
+    writerList = Writers.get_all_writers()
+    for writer in writerList:
+        writer.unassign_all_problems()
+
+    for problemNumber in range(1, Definitions.get_value('problem_count')+1):
+        for language in Languages.get_all_language_names():
+            assignedCount = 0
+            for i in range(0, Definitions.get_value('complete_threshold')):
+                if assignedCount >= Definitions.get_value('complete_threshold'):
+                    break
+            
+                writer = get_best_candidate(writerList, language)
+                if not writer is None:
+                    writer.add_assigned_problem(problemNumber, language)
+                    assignedCount += 1
+
+def get_best_candidate(writerList, languageName):
+    # First, sort the writer list by assigned problem count
+    writerList = sorted(writerList, key=lambda x: x.get_number_assigned_problems())
+    for writer in writerList:
+        if writer.knows_language(languageName):
+            return writer
+
 def handle_optional_args(arguments, output=sys.stdout) -> int:
     """
     Handles optional args given by arguments. 
@@ -120,6 +145,10 @@ def handle_optional_args(arguments, output=sys.stdout) -> int:
 
     elif arguments.addLanguage:
         add_language_to_writer(arguments.addLanguage, arguments.language)
+        return 0
+
+    elif arguments.assignProblems:
+        assign_problems()
         return 0
     
     return 1

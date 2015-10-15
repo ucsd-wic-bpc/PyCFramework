@@ -206,3 +206,13 @@ class Languages:
                 return language
 
         return None
+
+    @classmethod
+    def get_all_language_names(cls):
+        """
+        Get a list of all languages
+        """
+        if cls._languagesDict is None:
+            cls.load_languages()
+
+        return [language.name for language in cls._languagesDict.values()]
