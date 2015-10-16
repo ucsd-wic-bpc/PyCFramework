@@ -206,3 +206,12 @@ class TestRunner(unittest.TestCase):
         runner.main(['--addLanguage', 'Mary'], out=output)
         runnerOutput = output.getvalue().strip()
         self.assertEqual(runnerOutput, 'Error: Must specify a language')
+
+    # Mary wants to take all problems and assign them such that each problem
+    # in each language meets the defined completion threshold. She does this with:
+    # $ ./runner.py --assignProblems
+
+    def test_assign_one_writer(self):
+        """
+        Ensure that using --assignProblems properly allocates problems
+        """
