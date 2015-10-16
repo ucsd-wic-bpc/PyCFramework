@@ -18,6 +18,7 @@ from util import case
 from util.case import KnownCase
 from util.definitions import Definitions
 from util.language import Languages
+from util import numberparse
 
 def parse_arguments(arguments, output=sys.stdout):
     argParser = PCArgParseFactory.get_argument_parser(output)
@@ -25,17 +26,16 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--email', help='The email of the writer being operated on')
     argParser.add_argument('--language', nargs='*' ,help='The name of the language being operated on')
     argParser.add_argument('--createWriter', help='Create a new writer with specified info')
-    argParser.add_argument('--listWriter', nargs='*', help='List the problems that a writer has completed')
+    argParser.add_argument('--listWriter', nargs='+', help='List the problems that a writer has completed')
     argParser.add_argument('--deleteWriter', help='Remove the specified writer')
-    argParser.add_argument('--addLanguage', nargs='*', help='Add a language to the specified writer')
+    argParser.add_argument('--addLanguage', nargs='+', help='Add a language to the specified writer')
     argParser.add_argument('--assignProblems', action='store_true', help='Assign problems to writers')
     argParser.add_argument('--todo', help='List the problems that a given writer has yet to do')
     argParser.add_argument('--help', action='store_true')
     argParser.add_argument('--diff', action='store_true', help='Show the diff of incorrect solutions')
     argParser.add_argument('writerFolder', help='The folder for the writer to operate on',
-            nargs='?')
-    argParser.add_argument('problemNumber', help='The number of the problem to operate on',
-            nargs='?')
+            nargs='*')
+    argParser.add_argument('--problems', help='The number of the problem to operate on')
 
     if len(arguments) == 0:
         argParser.print_help()
@@ -193,22 +193,32 @@ def get_test_results(writer, problemNumber, includeDiffs=False):
 
     return results
 
+def get_problem_list(problemString):
+    return numberparse.str_to_list_range(problemString, 
+            int(Definitions.get_value('problem_count')), 1)
+
+
 def handle_positional_args(arguments, output=sys.stdout):
     # Check if user did something wrong
-    if arguments is None or arguments.writerFolder is None:
+    if arguments is None:
         PCArgParseFactory.get_argument_parser(output).print_help()
         return
 
-    # Now we need to load the writer that the user specified
-    writer = Writer.load_from_folder(arguments.writerFolder)
-    if writer is None:
-        raise PyCException('Error: {} is an invalid writer'.format(arguments.writerFolder))
+    if arguments.writerFolder is None or len(arguments.writerFolder) == 0:
+        arguments.writerFolder = Writers.get_all_writer_names()
 
-    # If no problem was specified, test all solutions
-    testResults = get_test_results(writer, arguments.problemNumber, arguments.diff)
-    for result in testResults:
-        output.write(result)
+    # Now we need to load the writers that the user specified
+    for writerFolder in arguments.writerFolder:
+        writer = Writer.load_from_folder(writerFolder)
+        if writer is None:
+            raise PyCException('Error: {} is an invalid writer'.format(writerFolder))
 
+        # If no problem was specified, test all solutions
+        problems = get_problem_list(arguments.problems)
+        for problem in get_problem_list(arguments.problems):
+            testResults = get_test_results(writer, problem, arguments.diff)
+            for result in testResults:
+                output.write(result)
     
 def main(arguments, out=sys.stdout):
     # Set the path

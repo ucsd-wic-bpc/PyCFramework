@@ -238,6 +238,13 @@ class Writers:
         return [Writer.load_from_folder(writerName) for writerName in cls.writers]
 
     @classmethod
+    def get_all_writer_names(cls):
+        if cls.writers is None:
+            cls._load_from_config()
+
+        return cls.writers
+
+    @classmethod
     def _write_file(cls):
         if cls.writers is None:
             cls._load_from_config()
