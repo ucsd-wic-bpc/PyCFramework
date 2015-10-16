@@ -25,7 +25,7 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--email', help='The email of the writer being operated on')
     argParser.add_argument('--language', nargs='*' ,help='The name of the language being operated on')
     argParser.add_argument('--createWriter', help='Create a new writer with specified info')
-    argParser.add_argument('--listWriter', help='List the problems that a writer has completed')
+    argParser.add_argument('--listWriter', nargs='*', help='List the problems that a writer has completed')
     argParser.add_argument('--deleteWriter', help='Remove the specified writer')
     argParser.add_argument('--addLanguage', nargs='*', help='Add a language to the specified writer')
     argParser.add_argument('--assignProblems', action='store_true', help='Assign problems to writers')
@@ -50,13 +50,20 @@ def parse_arguments(arguments, output=sys.stdout):
 
         return args
 
-def get_writer_details(writerFolder):
+def get_indiv_writer_details(writerFolder):
     writerObject = Writer.load_from_folder(writerFolder)
     if writerObject is None:
         raise PyCException('Error: {} is an invalid Writer'.format(writerFolder))
     else:
         return str(writerObject)
 
+def get_writer_details(writerFolders):
+    writerDetails = []
+    for writer in writerFolders:
+        writerDetails.append(get_indiv_writer_details(writer))
+
+    return '\n'.join(writerDetails)
+    
 def create_writer(writerFolder, writerName, writerEmail):
     if writerEmail is None:
         raise PyCException('Error: No email specified')
