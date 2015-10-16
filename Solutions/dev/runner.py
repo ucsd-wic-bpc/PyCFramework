@@ -29,6 +29,7 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--deleteWriter', help='Remove the specified writer')
     argParser.add_argument('--addLanguage', help='Add a language to the specified writer')
     argParser.add_argument('--assignProblems', action='store_true', help='Assign problems to writers')
+    argParser.add_argument('--todo', help='List the problems that a given writer has yet to do')
     argParser.add_argument('--help', action='store_true')
     argParser.add_argument('--diff', action='store_true', help='Show the diff of incorrect solutions')
     argParser.add_argument('writerFolder', help='The folder for the writer to operate on',
@@ -119,6 +120,13 @@ def get_best_candidate(writerList, languageName):
         if writer.knows_language(languageName):
             return writer
 
+def get_todo_list(writerFolder):
+    writer = Writer.load_from_folder(writerFolder)
+    if writer is None:
+        raise PyCException('Error: {} is an invalid writer'.format(writerFolder))
+
+    return ['{} in {}\n'.format(problem[0], problem[1]) for problem in writer.get_assigned_problems_not_started()]
+
 def handle_optional_args(arguments, output=sys.stdout) -> int:
     """
     Handles optional args given by arguments. 
@@ -149,6 +157,12 @@ def handle_optional_args(arguments, output=sys.stdout) -> int:
 
     elif arguments.assignProblems:
         assign_problems()
+        return 0
+
+    elif arguments.todo:
+        todoList = get_todo_list(arguments.todo)
+        for todo in todoList:
+            output.write(todo)
         return 0
     
     return 1

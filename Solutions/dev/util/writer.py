@@ -70,6 +70,25 @@ class Writer:
         self.assignedProblems = []
         self._write_datafile()
 
+    def get_assigned_problems_not_started(self):
+        notStarted = []
+
+        for assignedProblem in self.assignedProblems:
+            if not assignedProblem[0] in self._solutions:
+                notStarted.append(assignedProblem)
+                continue
+
+            started = False
+            for solution in self._solutions[assignedProblem[0]]:
+                if solution.solutionLanguage.name == assignedProblem[1]:
+                    started = True
+                    break
+
+            if not started:
+                notStarted.append(assignedProblem)
+
+        return notStarted
+
     def create(self):
         if self._path is None or self._path == '':
             raise Exception('Cannot create writer without path')
