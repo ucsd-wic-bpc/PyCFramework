@@ -23,11 +23,11 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser = PCArgParseFactory.get_argument_parser(output)
     argParser.add_argument('--name', help='The name of the writer being operated on')
     argParser.add_argument('--email', help='The email of the writer being operated on')
-    argParser.add_argument('--language', help='The name of the language being operated on')
+    argParser.add_argument('--language', nargs='*' ,help='The name of the language being operated on')
     argParser.add_argument('--createWriter', help='Create a new writer with specified info')
-    argParser.add_argument('--listWriter',help='List the problems that a writer has completed')
+    argParser.add_argument('--listWriter', help='List the problems that a writer has completed')
     argParser.add_argument('--deleteWriter', help='Remove the specified writer')
-    argParser.add_argument('--addLanguage', help='Add a language to the specified writer')
+    argParser.add_argument('--addLanguage', nargs='*', help='Add a language to the specified writer')
     argParser.add_argument('--assignProblems', action='store_true', help='Assign problems to writers')
     argParser.add_argument('--todo', help='List the problems that a given writer has yet to do')
     argParser.add_argument('--help', action='store_true')
@@ -86,15 +86,17 @@ def solution_passes_case(solution, case):
 
     return (solutionOutput == case.outputContents, solutionOutput)
 
-def add_language_to_writer(writerFolder, languageName):
-    if languageName is None:
+def add_language_to_writer(writerFolders, languageNames):
+    if languageNames is None or len(languageNames) == 0:
         raise PyCException('Error: Must specify a language')
 
-    writer = Writer.load_from_folder(writerFolder)
-    if writer is None:
-        raise PyCException('Error: {} is an invalid writer'.format(writerFolder))
+    for writerFolder in writerFolders:
+        writer = Writer.load_from_folder(writerFolder)
+        if writer is None:
+            raise PyCException('Error: {} is an invalid writer'.format(writerFolder))
 
-    writer.add_known_language(languageName)
+        for languageName in languageNames:
+            writer.add_known_language(languageName)
 
 def assign_problems():
     writerList = Writers.get_all_writers()
