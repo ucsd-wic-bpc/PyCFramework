@@ -115,11 +115,31 @@ class Writer:
                         self.DATAFILE_ASSIGNED_PROBLEMS: [[item[0], item[1]] for item in self.assignedProblems]}
         fileops.write_json_dict(self._get_datafile_path(), datafileDict)
 
+    def write_file(self, filename, data):
+        """
+        Writes the given file to the user's directory, overwriting if exists
+        """
+        filePath = self._get_sub_path(filename)
+        with open(filePath, 'w+') as openFile:
+            openFile.write(data)
+
+    def append_file(self, filename, data):
+        filePath = self._get_sub_path(filename)
+        with open(filePath, 'a+') as openFile:
+            openFile.write('{}\n'.format(data))
+
+    def delete_file(self, filename):
+        filePath = self._get_sub_path(filename)
+        fileops.remove(filePath, fileops.FileType.FILE)
+
     def _get_datafile_path(self) -> str:
         """
         Return the path of the data file for this writer. 
         """
-        return fileops.join_path(self._path, self.DATAFILE_PATH)
+        return self._get_sub_path(self.DATAFILE_PATH)
+
+    def _get_sub_path(self, path) -> str:
+        return fileops.join_path(self._path, path)
 
     def get_solutions(self, problemNumber: int) -> list:
         """

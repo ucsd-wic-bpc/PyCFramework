@@ -19,6 +19,7 @@ class Variables:
     NAME_FILENAME = 'filename'
     NAME_FILENAME_LESS_EXT = 'filename_less_extension'
     NAME_DIRECTORY = 'directory'
+    NAME_LANGUAGE = 'language'
 
     @classmethod
     def load_variables(cls):

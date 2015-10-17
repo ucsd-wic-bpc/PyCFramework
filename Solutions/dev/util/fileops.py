@@ -73,6 +73,10 @@ def write_json_dict(path, dictionary):
     with open(path, 'w+') as openFile:
         openFile.write(get_json_string(dictionary))
 
+def write_file(path, contents):
+    with open(path, 'w+') as openFile:
+        openFile.write(contents)
+
 def get_json_string(jsonData):
     """
     Returns a decoded json data chunk

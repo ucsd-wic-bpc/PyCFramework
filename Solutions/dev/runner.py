@@ -19,6 +19,7 @@ from util.case import KnownCase
 from util.definitions import Definitions
 from util.language import Languages
 from util import numberparse
+from util.variables import Variables
 
 def parse_arguments(arguments, output=sys.stdout):
     argParser = PCArgParseFactory.get_argument_parser(output)
@@ -33,6 +34,7 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--todo', help='List the problems that a given writer has yet to do')
     argParser.add_argument('--help', action='store_true')
     argParser.add_argument('--diff', action='store_true', help='Show the diff of incorrect solutions')
+    argParser.add_argument('--file', action='store_true', help='Save outputs to file')
     argParser.add_argument('writerFolder', help='The folder for the writer to operate on',
             nargs='*')
     argParser.add_argument('--problems', help='The number of the problem to operate on')
@@ -176,14 +178,17 @@ def handle_optional_args(arguments, output=sys.stdout) -> int:
     
     return 1
 
-def get_test_results(writer, problemNumber, includeDiffs=False):
+def get_test_results(writer, problemNumber, includeDiffs=False, writeOutput=False):
     results = []
 
+    outputList = []
     for caseProblemNumber, caseObjectList in case.get_all_cases(problemNumber=problemNumber).items():
         problemSolutions = writer.get_solutions(caseProblemNumber)
         for solution in problemSolutions:
             for caseObject in caseObjectList:
                 solutionResults = solution_passes_case(solution, caseObject)
+                outputList.append(solutionResults[1])
+
                 if not solutionResults[0]:
                     results.append( 'Incorrect Solution: {} {} {} {} #{}\n{}'.format(
                         solution.solutionWriter, solution.problemNumber,
@@ -191,9 +196,36 @@ def get_test_results(writer, problemNumber, includeDiffs=False):
                         caseObject.caseNumber, 
                         caseObject.get_output_diff(solutionResults[1]) if includeDiffs else ''))
 
+    if writeOutput:
+        write_output_list(writer, solution, caseObject, 
+                outputList, includeDiffs)
     return results
 
+def write_output_list(writer, solution, case, solutionOutputList, includeDiffs=False):
+    namingScheme = Definitions.get_value('output_naming')
+    formatDict = {
+            Variables.get_variable_key_name(Variables.NAME_PROBLEM_NUMBER) : solution.problemNumber,
+            Variables.get_variable_key_name(Variables.NAME_CASE_TYPE) : case.get_case_string(),
+            Variables.get_variable_key_name(Variables.NAME_LANGUAGE) : solution.solutionLanguage.name
+            }
+    namingScheme = namingScheme.format(**formatDict)
+    outFile = '{}.{}'.format(namingScheme, Definitions.get_value('output_file_ending'))
+    if includeDiffs:
+        diffFile = '{}.{}'.format(namingScheme, 'diff')
+        writer.delete_file(diffFile)
+
+    writer.delete_file(outFile)
+
+    for output in solutionOutputList:
+        if includeDiffs:
+            writer.append_file(diffFile, case.get_output_diff(output))
+
+        writer.append_file(outFile, output)
+
 def get_problem_list(problemString):
+    if problemString is None:
+        return [None]
+
     return numberparse.str_to_list_range(problemString, 
             int(Definitions.get_value('problem_count')), 1)
 
@@ -216,7 +248,8 @@ def handle_positional_args(arguments, output=sys.stdout):
         # If no problem was specified, test all solutions
         problems = get_problem_list(arguments.problems)
         for problem in get_problem_list(arguments.problems):
-            testResults = get_test_results(writer, problem, arguments.diff)
+            testResults = get_test_results(writer, problem, arguments.diff,
+                    arguments.file)
             for result in testResults:
                 output.write(result)
     
