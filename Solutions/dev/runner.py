@@ -18,7 +18,7 @@ from util import case
 from util.case import KnownCase
 from util.definitions import Definitions
 from util.language import Languages
-from util import numberparse
+from util.parse import NumberParse
 from util.variables import Variables
 
 def parse_arguments(arguments, output=sys.stdout):
@@ -192,7 +192,7 @@ def get_test_results(writer, problemNumber, includeDiffs=False, writeOutput=Fals
                 if not solutionResults[0]:
                     results.append( 'Incorrect Solution: {} {} {} {} #{}\n{}'.format(
                         solution.solutionWriter, solution.problemNumber,
-                        solution.solutionLanguage.name, caseObject.get_case_string(), 
+                        solution.solutionLanguage.name, caseObject.get_case_string().title(),
                         caseObject.caseNumber, 
                         caseObject.get_output_diff(solutionResults[1]) if includeDiffs else ''))
 
@@ -226,9 +226,8 @@ def get_problem_list(problemString):
     if problemString is None:
         return [None]
 
-    return numberparse.str_to_list_range(problemString, 
+    return NumberParse().str_to_list_range( problemString, 
             int(Definitions.get_value('problem_count')), 1)
-
 
 def handle_positional_args(arguments, output=sys.stdout):
     # Check if user did something wrong

@@ -12,6 +12,9 @@ from util.definitions import Definitions
 import difflib
 
 class CaseType:
+    """
+    An Enum for differentiating between various types of cases
+    """
     SAMPLE = 0
     CORNER_CASE = 1
     GENERATED = 2
@@ -21,7 +24,13 @@ class CaseType:
     GENERATED_STRING_KEY = 'generated_case_type'
 
     @staticmethod
-    def from_string(string):
+    def from_string(string: str) -> int:
+        """
+        Converts the CaseType strings defined in the definitions file to
+        their respective enum int values. If invalid string, assumed generated
+
+        :param string: The string to convert to enum
+        """
         if string == Definitions.get_value(CaseType.SAMPLE_STRING_KEY):
             return CaseType.SAMPLE
         elif string == Definitions.get_value(CaseType.CORNER_STRING_KEY):
@@ -30,13 +39,16 @@ class CaseType:
             return CaseType.GENERATED
 
     @staticmethod
-    def to_string(caseType):
+    def to_string(caseType: int) -> str:
+        """
+        Converts the casetype enum int into a readable string
+        """
         if caseType == CaseType.SAMPLE:
-            return 'Sample'
+            return Definitions.get_value(CaseType.SAMPLE_STRING_KEY)
         elif caseType == CaseType.CORNER_CASE:
-            return 'Corner-Case'
+            return Definitions.get_value(CaseType.CORNER_STRING_KEY)
         else:
-            return 'Generated'
+            return Definitions.get_value(CaseType.GENERATED_STRING_KEY)
 
 class Case:
     NAMING_DEFINITION_KEY = 'case_naming'
@@ -126,6 +138,5 @@ def get_cases_from_json(json, problemNumber, caseType):
 def _parse_output_json(jsonData):
     if not isinstance(jsonData, dict):
         return fileops.get_json_string(jsonData)
-
     else:
         return fileops.get_json_string([jsonData[key] for key in sorted(jsonData.keys())])
