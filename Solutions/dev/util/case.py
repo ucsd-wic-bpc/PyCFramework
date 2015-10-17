@@ -193,11 +193,13 @@ def _parse_input_json(jsonData):
     """
     Convert the input JSON into a standard format.
 
-    If input looks like 1 -> return "1"
+    If input looks like 1 -> return "[1]"
     If input looks like [1,2,3] -> return "[1,2,3]"
     If input looks like {"0":"hello", "1":"world"} -> return "[hello,world]"
     """
-    if not isinstance(jsonData, dict):
+    if not isinstance(jsonData, dict) and not isinstance(jsonData, list):
+        return fileops.get_json_string(list(jsonData))
+    elif not isinstance(jsonData, dict):
         return fileops.get_json_string(jsonData)
     else:
         return fileops.get_json_string([jsonData[key] for key in 
