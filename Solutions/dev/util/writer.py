@@ -52,6 +52,15 @@ class Writer:
         self._add_known_language_from_name(languageName)
         self._write_datafile()
 
+    def add_known_language_from_list(self, languageNameList):
+        if not isinstance(languageNameList, list):
+            return self.add_known_language(languageNameList)
+
+        for languageName in languageNameList:
+            self._add_known_language_from_name(languageName)
+
+        self._write_datafile()
+
     def knows_language(self, languageName):
         return languageName in self.knownLanguages
 

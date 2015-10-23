@@ -8,6 +8,7 @@
 import os
 import json
 import shutil
+import csv
 
 def exists(path, fileType):
     """
@@ -54,6 +55,27 @@ def remove(path, fileType):
             return False
 
     return True
+
+def parse_csv(path, delimiter=';', subdelimiter=','):
+    """
+    Return a list of data found in the csv file delineated by delimiter.
+    If subdelimiter exists in a particular delineated field, that field is
+    stored as a sublist
+    """
+    csvList = []
+    if not exists(path, FileType.FILE):
+        return csvList
+
+    with open(path, 'r') as csvfile:
+        csvReader = csv.reader(csvfile, delimiter=delimiter)
+        for row in csvReader:
+            for i in range(0, len(row)):
+                if subdelimiter in row[i]:
+                    row[i] = row[i].split(subdelimiter)
+
+            csvList.append(row)
+
+    return csvList
 
 def get_json_dict(path):
     """

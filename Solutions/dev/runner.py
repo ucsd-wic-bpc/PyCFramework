@@ -35,6 +35,7 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--help', action='store_true')
     argParser.add_argument('--diff', action='store_true', help='Show the diff of incorrect solutions')
     argParser.add_argument('--file', action='store_true', help='Save outputs to file')
+    argParser.add_argument('--importWriters', help='Import writers from a CSV file in the format of "folder;name;email;lang1,lang2,lang3')
     argParser.add_argument('writerFolder', help='The folder for the writer to operate on',
             nargs='*')
     argParser.add_argument('--problems', help='The number of the problem to operate on')
@@ -174,6 +175,15 @@ def handle_optional_args(arguments, output=sys.stdout) -> int:
         todoList = get_todo_list(arguments.todo)
         for todo in todoList:
             output.write(todo)
+        return 0
+
+    elif arguments.importWriters:
+        writerDataList = fileops.parse_csv(arguments.importWriters)
+        for dataChunk in writerDataList:
+            w = Writer(writerPath = dataChunk[0], writerName = dataChunk[1],
+                    writerEmail = dataChunk[2])
+            w.create()
+            w.add_known_language_from_list(dataChunk[3])
         return 0
     
     return 1
