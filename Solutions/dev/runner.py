@@ -18,7 +18,7 @@ from util import case
 from util.case import KnownCase
 from util.definitions import Definitions
 from util.language import Languages
-from util import numberparse
+from util.parse import NumberParse
 from util.variables import Variables
 
 def parse_arguments(arguments, output=sys.stdout):
@@ -35,6 +35,7 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--help', action='store_true')
     argParser.add_argument('--diff', action='store_true', help='Show the diff of incorrect solutions')
     argParser.add_argument('--file', action='store_true', help='Save outputs to file')
+    argParser.add_argument('--importWriters', help='Import writers from a CSV file in the format of "folder;name;email;lang1,lang2,lang3')
     argParser.add_argument('writerFolder', help='The folder for the writer to operate on',
             nargs='*')
     argParser.add_argument('--problems', help='The number of the problem to operate on')
@@ -175,6 +176,15 @@ def handle_optional_args(arguments, output=sys.stdout) -> int:
         for todo in todoList:
             output.write(todo)
         return 0
+
+    elif arguments.importWriters:
+        writerDataList = fileops.parse_csv(arguments.importWriters)
+        for dataChunk in writerDataList:
+            w = Writer(writerPath = dataChunk[0], writerName = dataChunk[1],
+                    writerEmail = dataChunk[2])
+            w.create()
+            w.add_known_language_from_list(dataChunk[3])
+        return 0
     
     return 1
 
@@ -192,7 +202,7 @@ def get_test_results(writer, problemNumber, includeDiffs=False, writeOutput=Fals
                 if not solutionResults[0]:
                     results.append( 'Incorrect Solution: {} {} {} {} #{}\n{}'.format(
                         solution.solutionWriter, solution.problemNumber,
-                        solution.solutionLanguage.name, caseObject.get_case_string(), 
+                        solution.solutionLanguage.name, caseObject.get_case_string().title(),
                         caseObject.caseNumber, 
                         caseObject.get_output_diff(solutionResults[1]) if includeDiffs else ''))
 
@@ -226,9 +236,8 @@ def get_problem_list(problemString):
     if problemString is None:
         return [None]
 
-    return numberparse.str_to_list_range(problemString, 
+    return NumberParse().str_to_list_range( problemString, 
             int(Definitions.get_value('problem_count')), 1)
-
 
 def handle_positional_args(arguments, output=sys.stdout):
     # Check if user did something wrong
