@@ -161,7 +161,7 @@ class Writer:
         """
         Add a provided solution to the solution list
         """
-        if not solution.problemNumber in self._solutions:
+        if not int(solution.problemNumber) in self._solutions:
             self._solutions[int(solution.problemNumber)] = [solution]
         else:
             self._solutions[int(solution.problemNumber)].append(solution)

@@ -81,7 +81,7 @@ def get_json_string(jsonData):
     """
     Returns a decoded json data chunk
     """
-    return json.dumps(jsonData)
+    return str(json.dumps(jsonData, separators=(',', ':')))
 
 def join_path(path, *parts):
     """

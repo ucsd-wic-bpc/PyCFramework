@@ -88,6 +88,8 @@ def _get_file_problemnumber_type_tuple(path):
             Variables.get_variable_key_name(Variables.NAME_PROBLEM_NUMBER))
     caseType = filenameMatcher.get_variable_value(filename,
             Variables.get_variable_key_name(Variables.NAME_CASE_TYPE))
+    if problemNumber is None:
+        return None
     return (int(problemNumber), CaseType.from_string(caseType))
 
 
@@ -125,6 +127,8 @@ def get_cases_from_json(json, problemNumber, caseType):
 
 def _parse_output_json(jsonData):
     if not isinstance(jsonData, dict):
+        if not isinstance(jsonData, list):
+            jsonData = [jsonData]
         return fileops.get_json_string(jsonData)
 
     else:
