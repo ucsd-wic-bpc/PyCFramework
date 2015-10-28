@@ -192,7 +192,7 @@ def get_cases_from_json(json, problemNumber, caseType):
 
     return caseList
 
-def _parse_output_json(jsonData):
+def _parse_input_json(jsonData):
     if not isinstance(jsonData, dict):
         if not isinstance(jsonData, list):
             jsonData = [jsonData]
