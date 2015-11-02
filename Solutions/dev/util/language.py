@@ -103,9 +103,10 @@ class AppliedLanguage(Language):
         if isinstance(string, str):
             return string.format(**formatDict)
         elif isinstance(string, list):
-            for i in range(0, len(string)):
-                string[i] = AppliedLanguage._get_formatted_str_rec(formatDict, string[i])
-            return string
+            stringCopy = list(string)
+            for i in range(0, len(stringCopy)):
+                stringCopy[i] = AppliedLanguage._get_formatted_str_rec(formatDict, stringCopy[i])
+            return stringCopy
 
     def _compile_code(self):
         """
@@ -128,6 +129,7 @@ class AppliedLanguage(Language):
         """
         if not self._compileCommand is None:
             self._path = self._compile_code()
+
 
         runCommand = [self._runCommand]
         runCommand.extend(self._runArguments)

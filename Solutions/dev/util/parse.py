@@ -17,15 +17,15 @@ class NumberParse:
         if not self._lessThanSymbol in string and not self._greaterThanSymbol in string:
             return [int(string)]
 
-        parsedString = parse_greater_than(string, uBound)
+        parsedString = self.parse_greater_than(string, uBound)
         if isinstance(parsedString, list):
             return parsedString
 
-        parsedString = parse_less_than(string, lBound)
+        parsedString = self.parse_less_than(string, lBound)
         if isinstance(parsedString, list):
             return parsedString
 
-        parsedString = parse_range(string, lBound, uBound)
+        parsedString = self.parse_range(string, lBound, uBound)
         return parsedString
 
     def parse_greater_than(self, string, uBound):

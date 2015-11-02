@@ -135,7 +135,6 @@ def _get_file_problemnumber_type_tuple(path):
             Variables.get_variable_key_name(Variables.NAME_CASE_TYPE))
     if problemNumber is None:
         return None
-    return (int(problemNumber), CaseType.from_string(caseType))
 
     # Return the tuple
     return (int(problemNumber), CaseType.from_string(caseType))
