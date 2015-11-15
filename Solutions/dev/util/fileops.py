@@ -111,12 +111,15 @@ def join_path(path, *parts):
     """
     return os.path.join(path, *parts)
 
-def get_files_in_dir(path: str, recursive: bool=False) -> list:
+def get_files_in_dir(path: str, recursive: bool=False, getHidden: bool=False) -> list:
     """
     Returns a list of filepaths within a directory. Also includes child directories if recursive
     """
     if not recursive:
-        return [join_path(path, filePath) for filePath in os.listdir(path) if os.path.isfile(join_path(path, filePath))]
+        return [join_path(path, filePath) for filePath in os.listdir(path) if 
+                os.path.isfile(join_path(path, filePath)) and 
+                (getHidden and file_is_hidden(filePath)) or 
+                (not getHidden and not file_is_hidden(filePath)) ]
     else:
         workingFileList = get_files_in_dir(path, recursive=False)
         for filePath in os.listdir(path):
@@ -124,6 +127,12 @@ def get_files_in_dir(path: str, recursive: bool=False) -> list:
                 workingFileList.extend(get_files_in_dir(join_path(path, filePath), recursive=True))
 
         return workingFileList
+
+def file_is_hidden(path):
+    """
+    Returns true if the file given by path is hidden
+    """
+    return get_basename(path).startswith('.')
 
 def get_basename_less_extension(path: str) -> str:
     """
