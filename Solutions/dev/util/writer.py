@@ -112,7 +112,7 @@ class Writer:
             raise Exception('Cannot delete writer without path')
 
         fileops.remove(self._path, fileops.FileType.DIRECTORY)
-        Writers.delete_writer(self._path)
+        Writers.delete_writer(fileops.get_basename(self._path))
 
     def _write_datafile(self):
         """
