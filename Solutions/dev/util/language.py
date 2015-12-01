@@ -65,6 +65,9 @@ class Language:
     def execute_code(self, codePath, inputContents):
         return AppliedLanguage.get_applied_language(codePath, self).execute_code(inputContents)
 
+    def compile_code(self, codePath):
+        AppliedLanguage.get_applied_language(codePath, self)._compile_code()
+
 class AppliedLanguage(Language):
     # A language that's applied to a specific solution
     _appliedLanguages = {}
@@ -115,6 +118,9 @@ class AppliedLanguage(Language):
 
         Returns: The path of the compiled code object
         """
+        if self._compileCommand is None:
+            return
+
         compileCommand = [self._compileCommand]
         compileCommand.extend(self._compileArguments)
         if not subprocess.call(compileCommand) == 0:
@@ -129,8 +135,8 @@ class AppliedLanguage(Language):
         then returning the output or an ExecutionError if one occurred
         """
         if not self._compileCommand is None:
-            self._path = self._compile_code()
-
+            self._path = fileops.get_path_with_changed_extension(self._path,
+                          self._runExtension)
 
         runCommand = [self._runCommand]
         runCommand.extend(self._runArguments)

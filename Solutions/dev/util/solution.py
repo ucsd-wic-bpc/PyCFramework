@@ -35,6 +35,9 @@ class Solution:
 
         return self.solutionLanguage.execute_code(self._path, inputContents)
 
+    def compile(self):
+        self.solutionLanguage.compile_code(self._path)
+
     @staticmethod
     def is_solution_file(path):
         """

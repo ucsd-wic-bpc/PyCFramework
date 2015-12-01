@@ -243,6 +243,7 @@ def get_test_results(writer, problemNumber, includeDiffs=False, writeOutput=Fals
     for caseProblemNumber, caseObjectList in case.get_all_cases(problemNumber=problemNumber).items():
         problemSolutions = writer.get_solutions(caseProblemNumber)
         for solution in problemSolutions:
+            solution.compile()
             for caseObject in caseObjectList:
                 solutionResults = solution_passes_case(solution, caseObject)
                 outputList.append(solutionResults[1])
