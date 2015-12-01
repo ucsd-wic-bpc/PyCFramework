@@ -34,7 +34,7 @@
 		{
 			"language"         : "Python",
 			"runExtension"     : "py",
-			"runCommand"       : "python",
+			"runCommand"       : "python3",
 			"runArguments"     : [ "{directory}/{fileName}" ]
 		}
 	]

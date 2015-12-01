@@ -149,6 +149,8 @@ def _get_all_cases(directory, problemNumber=None):
     cases = {}
 
     for possibleCaseFile in fileops.get_files_in_dir(directory):
+        #if "general" in possibleCaseFile:
+            #continue
         problemTypeTuple = _get_file_problemnumber_type_tuple(possibleCaseFile)
         if (not problemNumber is None and 
             not problemTypeTuple[0] == int(problemNumber)):
@@ -193,8 +195,7 @@ def get_cases_from_json(json, problemNumber, caseType):
 
 def _parse_input_json(jsonData):
     if not isinstance(jsonData, dict):
-        if not isinstance(jsonData, list):
-            jsonData = [jsonData]
+        jsonData = [jsonData]
         return fileops.get_json_string(jsonData)
     else:
         return fileops.get_json_string([jsonData[key] for key in 

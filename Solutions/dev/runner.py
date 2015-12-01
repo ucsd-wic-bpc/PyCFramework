@@ -13,8 +13,10 @@ from util.pathmapper import PathMapper
 from util.writer import Writer, Writers
 from util.perror import PyCException
 from util import fileops
+from util.fileops import FileType
 from util.pcargparse import PCArgParseFactory
 from util import case
+from util.case import CaseType
 from util.case import KnownCase
 from util.definitions import Definitions
 from util.language import Languages
@@ -31,6 +33,7 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--deleteWriter', help='Remove the specified writer')
     argParser.add_argument('--addLanguage', nargs='+', help='Add a language to the specified writer')
     argParser.add_argument('--assignProblems', action='store_true', help='Assign problems to writers')
+    argParser.add_argument('--generateHackerrankZip', help='Generate the ZIP file containing HR I/O')
     argParser.add_argument('--todo', help='List the problems that a given writer has yet to do')
     argParser.add_argument('--help', action='store_true')
     argParser.add_argument('--diff', action='store_true', help='Show the diff of incorrect solutions')
@@ -185,8 +188,53 @@ def handle_optional_args(arguments, output=sys.stdout) -> int:
             w.create()
             w.add_known_language_from_list(dataChunk[3])
         return 0
+
+    elif arguments.generateHackerrankZip:
+        generate_hackerrank_zip(arguments.generateHackerrankZip)
+        return 0
     
     return 1
+
+def generate_hackerrank_zip(directory):
+    # The goal is to generate a ZIP file containing 
+    # General zip should include sample and general
+    # Corner zip should include sample and corner
+    if not fileops.exists(directory, FileType.DIRECTORY):
+        os.mkdir(directory)
+
+    # Look through all cases
+    for caseProblemNumber, caseObjectList in case.get_all_cases().items():
+        problemDir = fileops.join_path(directory, 'Problem{}'.format(caseProblemNumber))
+        caseTypes = [CaseType.SAMPLE, CaseType.CORNER_CASE, CaseType.GENERATED]
+        if not fileops.exists(problemDir, FileType.DIRECTORY):
+            os.mkdir(problemDir)
+        for caseType in caseTypes:
+            caseString = CaseType.to_string(caseType)
+            caseDir = fileops.join_path(problemDir, caseString)
+            inputDir = fileops.join_path(caseDir, 'input')
+            outputDir = fileops.join_path(caseDir, 'output')
+            if not fileops.exists(caseDir, FileType.DIRECTORY):
+                os.mkdir(caseDir)
+            if not fileops.exists(inputDir, FileType.DIRECTORY):
+                os.mkdir(inputDir)
+            if not fileops.exists(outputDir, FileType.DIRECTORY):
+                os.mkdir(outputDir)
+
+        # Move individual cases into the problem files
+        for caseObject in caseObjectList:
+            relevantDir = fileops.join_path(problemDir, caseObject.get_case_string())
+            inputDir = fileops.join_path(relevantDir, 'input')
+            outputDir = fileops.join_path(relevantDir, 'output')
+            inputFile = fileops.join_path(inputDir, 'input{}.txt'.format(caseObject.caseNumber))
+            outputFile = fileops.join_path(outputDir, 'output{}.txt'.format(caseObject.caseNumber))
+            fileops.write_file(inputFile, caseObject.inputContents)
+            if isinstance(caseObject, KnownCase):
+                fileops.write_file(outputFile, caseObject.outputContents)
+
+        for caseType in caseTypes:
+            caseString = CaseType.to_string(caseType)
+            fileops.zipdir(fileops.join_path(problemDir, caseString),
+                    fileops.join_path(problemDir, '{}.zip'.format(caseString)))
 
 def get_test_results(writer, problemNumber, includeDiffs=False, writeOutput=False):
     results = []

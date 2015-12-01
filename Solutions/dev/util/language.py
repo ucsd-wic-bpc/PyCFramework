@@ -10,6 +10,7 @@ from util import fileops
 from util.pathmapper import PathMapper
 from util.variables import Variables
 import subprocess
+import io
 
 class ExecutionError(Exception):
     def __init__(self, message):
@@ -133,9 +134,11 @@ class AppliedLanguage(Language):
 
         runCommand = [self._runCommand]
         runCommand.extend(self._runArguments)
-        runCommand.append(str(inputContents))
         try:
-            output = subprocess.check_output(runCommand).decode('utf-8')
+            encodedInput = inputContents.encode('utf-8')
+            output = subprocess.check_output(runCommand, input=encodedInput).decode('utf-8')
+            if not output is None:
+                output = output.replace('\r','')
         except subprocess.CalledProcessError as e:
             raise ExecutionError('Error: Runtime Error\n{}'.format(e.output))
 

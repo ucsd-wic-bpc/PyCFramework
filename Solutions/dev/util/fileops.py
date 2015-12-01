@@ -9,6 +9,7 @@ import os
 import json
 import shutil
 import csv
+import zipfile
 
 def exists(path, fileType):
     """
@@ -83,8 +84,11 @@ def get_json_dict(path):
     """
     dictionary = {}
     if exists(path, FileType.FILE):
-        with open(path) as openFile:
-            dictionary = json.loads(openFile.read())
+        try:
+            with open(path) as openFile:
+                dictionary = json.loads(openFile.read())
+        except:
+            raise Exception('Cannot load JSON from file {}'.format(path))
 
     return dictionary
 
@@ -104,6 +108,13 @@ def get_json_string(jsonData):
     Returns a decoded json data chunk
     """
     return str(json.dumps(jsonData, separators=(',', ':')))
+
+def zipdir(directory, zipfilePath):
+    zipf = zipfile.ZipFile(zipfilePath, 'w')
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            zipf.write(os.path.join(root,file))
+
 
 def join_path(path, *parts):
     """
