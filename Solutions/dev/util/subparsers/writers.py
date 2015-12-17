@@ -31,20 +31,20 @@ def operate(args):
     else:
         invalid_command(args)
 
-def add_to_subparser_object(subparserObject, rootParser):
-    writerParser = subparserObject.add_parser(SUBPARSER_KEYWORD, parents=[rootParser])
+def add_to_subparser_object(subparserObject, parentParser):
+    writerParser = subparserObject.add_parser(SUBPARSER_KEYWORD, parents=[parentParser])
     writerParser.add_argument('command')
     writerParser.set_defaults(func=operate)
 
 def list_writer(args):
     writerDetailsList = []
-    # Check to see if the user wants a specific writer
     if args.writer:
         writerDetailsList = [str(writer) for writer in 
                 _parse_delinieated_writer_name_list(args.writer, ',')]
     else:
         writerDetailsList = [str(writer) for writer in Writers.get_all_writers()]
 
+    # TODO: Change this print statement to the new output format
     print('\n'.join(writerDetailsList))
 
 def _parse_delinieated_writer_name_list(string, delimeter):
@@ -59,7 +59,22 @@ def _parse_delinieated_writer_name_list(string, delimeter):
     return writerList
 
 def display_todo_for_writer(args):
-    print("todo")
+    writerTodoList = []
+    if args.writer:
+        writerTodoList = [_get_todo_str_for_writer(writer) for writer in 
+                _parse_delinieated_writer_name_list(args.writer, ',')]
+    else:
+        writerTodoList = [_get_todo_str_for_writer(writer) for writer in 
+                Writers.get_all_writers()]
+
+    # TODO: Change this print statement to the new output format
+    print('\n'.join(writerTodoList))
+
+
+def _get_todo_str_for_writer(writer):
+    return '{}:\n{}'.format(writer.name, '\n'.join(['{} in {}'.format(
+        problem[0], problem[1]) for problem in 
+        writer.get_assigned_problems_not_started()]))
 
 def add_writer(args):
     print("add")

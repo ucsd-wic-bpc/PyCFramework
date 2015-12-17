@@ -182,7 +182,7 @@ class Writer:
         """
         # Check if writer directoroy exists. If not, return nothing
         if not fileops.exists(path, fileops.FileType.DIRECTORY):
-            raise PyCException('Error: Writer {} does not have a folder'.format(path))
+            return None
 
         loadedWriter = Writer(writerPath=path)
 
@@ -264,7 +264,15 @@ class Writers:
         if cls.writers is None:
             cls._load_from_config()
 
-        return [Writer.load_from_folder(writerName) for writerName in cls.writers]
+        writerList = []
+        for writerName in cls.writers:
+            writer = Writer.load_from_folder(writerName)
+            if writer is None:
+                raise PyCException('Error: Writer {} does not have a folder'.format(path))
+            else:
+                writerList.append(writer)
+
+        return writerList
 
     @classmethod
     def get_all_writer_names(cls):
