@@ -6,6 +6,7 @@
 # Contains a custom ArgParse object for use by PyCFramework
 ################################################################################
 import argparse
+import sys
 
 class PCArgParseFactory:
     cachedArgParser = None
@@ -13,15 +14,16 @@ class PCArgParseFactory:
     @classmethod
     def get_argument_parser(cls, output):
         if cls.cachedArgParser is None or not cls.cachedArgParser.output == output:
-            cls.cachedArgParser = PCArgParse(output)
+            cls.cachedArgParser = PCArgParse()
+            PCArgParse.output = output
 
         return cls.cachedArgParser
 
 class PCArgParse(argparse.ArgumentParser):
-    def __init__(self, output, **kwargs):
-        self.output = output
+    def __init__(self, **kwargs):
         super(PCArgParse, self).__init__(kwargs, add_help=False,
             description='An interface for a programming competition')
+        output = sys.stdout
 
     # Override to print help to output
     def print_help(self, file=None):
@@ -32,7 +34,7 @@ class PCArgParse(argparse.ArgumentParser):
 
     # Override to print help if invalid arg is provided
     def error(self, message):
-        output.write('Error: {0}\n'.format(message))
+        self.output.write('Error: {0}\n'.format(message))
         self.print_help()
         return
 

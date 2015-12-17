@@ -182,7 +182,7 @@ class Writer:
         """
         # Check if writer directoroy exists. If not, return nothing
         if not fileops.exists(path, fileops.FileType.DIRECTORY):
-            return None
+            raise PyCException('Error: Writer {} does not have a folder'.format(path))
 
         loadedWriter = Writer(writerPath=path)
 

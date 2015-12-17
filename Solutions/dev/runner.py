@@ -9,6 +9,7 @@
 ################################################################################
 import sys
 import os
+import argparse
 from util.pathmapper import PathMapper
 from util.writer import Writer, Writers
 from util.perror import PyCException
@@ -22,14 +23,17 @@ from util.definitions import Definitions
 from util.language import Languages
 from util.parse import NumberParse
 from util.variables import Variables
+from util.subparsers import writers as writersSubparser
 
 def parse_arguments(arguments, output=sys.stdout):
     argParser = PCArgParseFactory.get_argument_parser(output)
+    baseParser = argparse.ArgumentParser(add_help=False)
+    baseParser.add_argument('--writer')
+    argParser = argparse.ArgumentParser(parents=[baseParser], add_help=False)
     argParser.add_argument('--name', help='The name of the writer being operated on')
     argParser.add_argument('--email', help='The email of the writer being operated on')
     argParser.add_argument('--language', nargs='*' ,help='The name of the language being operated on')
     argParser.add_argument('--createWriter', help='Create a new writer with specified info')
-    argParser.add_argument('--listWriter', nargs='+', help='List the problems that a writer has completed')
     argParser.add_argument('--deleteWriter', help='Remove the specified writer')
     argParser.add_argument('--addLanguage', nargs='+', help='Add a language to the specified writer')
     argParser.add_argument('--assignProblems', action='store_true', help='Assign problems to writers')
@@ -39,9 +43,13 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--diff', action='store_true', help='Show the diff of incorrect solutions')
     argParser.add_argument('--file', action='store_true', help='Save outputs to file')
     argParser.add_argument('--importWriters', help='Import writers from a CSV file in the format of "folder;name;email;lang1,lang2,lang3')
-    argParser.add_argument('writerFolder', help='The folder for the writer to operate on',
-            nargs='*')
+    #argParser.add_argument('--writer', help='The writer to operate on')
+    #argParser.add_argument('writerFolder', help='The folder for the writer to operate on',
+            #nargs='*')
     argParser.add_argument('--problems', help='The number of the problem to operate on')
+    subparsers = argParser.add_subparsers()
+    writersSubparser.add_to_subparser_object(subparsers, baseParser)
+
 
     if len(arguments) == 0:
         argParser.print_help()
@@ -49,7 +57,13 @@ def parse_arguments(arguments, output=sys.stdout):
     else:
         try:
             args = argParser.parse_args(arguments)
-        except Exception: return None 
+            if args.func:
+                args.func(args)
+            else:
+                print(":P")
+        except Exception as e: 
+            print(str(e))
+            return None 
         if args.help:
             argParser.print_help()
             return None
