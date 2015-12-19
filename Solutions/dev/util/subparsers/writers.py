@@ -14,42 +14,48 @@ LIST_COMMAND = 'list'
 TODO_COMMAND = 'todo'
 ADD_COMMAND = 'add'
 DELETE_COMMAND = 'delete'
+IMPORT_COMMAND = 'import'
 
 def operate(args):
     commandArg = args.command
     if commandArg is None:
         return
 
-    if commandArg == LIST_COMMAND:
-        list_writer(args)
-    elif commandArg == TODO_COMMAND:
-        display_todo_for_writer(args)
-    elif commandArg == ADD_COMMAND:
+    commandPositionals = commandArg[1:]
+    command = commandArg[0]
+
+    if command == LIST_COMMAND:
+        list_writers(commandPositionals, args)
+    elif command == TODO_COMMAND:
+        display_todo_for_writer(commandPositionals, args)
+    elif command == ADD_COMMAND:
         add_writer(args)
-    elif commandArg == DELETE_COMMAND:
+    elif command == DELETE_COMMAND:
         delete_writer(args)
+    elif command == IMPORT_COMMAND:
+        import_writers(args)
     else:
         invalid_command(args)
 
 def add_to_subparser_object(subparserObject, parentParser):
     writerParser = subparserObject.add_parser(SUBPARSER_KEYWORD, parents=[parentParser])
-    writerParser.add_argument('command')
+    writerParser.add_argument('command', nargs='*')
     writerParser.set_defaults(func=operate)
 
-def list_writer(args):
+def list_writers(writers: list, args):
     writerDetailsList = []
-    if args.writer:
+    if len(writers) > 0:
         writerDetailsList = [str(writer) for writer in 
-                _parse_delinieated_writer_name_list(args.writer, ',')]
+                _form_writer_list_from_names(writers)]
     else:
         writerDetailsList = [str(writer) for writer in Writers.get_all_writers()]
 
     # TODO: Change this print statement to the new output format
     print('\n'.join(writerDetailsList))
 
-def _parse_delinieated_writer_name_list(string, delimeter):
+def _form_writer_list_from_names(writerNames:list, skipInvalidWriters=False):
     writerList = []
-    for writer in string.split(delimeter):
+    for writer in writerNames:
         loadedWriter = Writer.load_from_folder(writer)
         if loadedWriter is None:
             raise PyCException('Error: {} is an invalid Writer'.format(writer))
@@ -58,18 +64,17 @@ def _parse_delinieated_writer_name_list(string, delimeter):
 
     return writerList
 
-def display_todo_for_writer(args):
+def display_todo_for_writer(writers:list, args):
     writerTodoList = []
-    if args.writer:
-        writerTodoList = [_get_todo_str_for_writer(writer) for writer in 
-                _parse_delinieated_writer_name_list(args.writer, ',')]
+    if len(writers) > 0:
+        writerTodoList = [_get_todo_str_for_writer(writer) for writer in
+                _form_writer_list_from_names(writers)]
     else:
         writerTodoList = [_get_todo_str_for_writer(writer) for writer in 
                 Writers.get_all_writers()]
 
     # TODO: Change this print statement to the new output format
     print('\n'.join(writerTodoList))
-
 
 def _get_todo_str_for_writer(writer):
     return '{}:\n{}'.format(writer.name, '\n'.join(['{} in {}'.format(
@@ -84,3 +89,6 @@ def delete_writer(args):
 
 def invalid_command(args):
     print("invalid")
+
+def import_writers(args):
+    print("importing")

@@ -27,18 +27,18 @@ from util.subparsers import writers as writersSubparser
 
 def parse_arguments(arguments, output=sys.stdout):
     argParser = PCArgParseFactory.get_argument_parser(output)
+    # Create a base parser to handle all the generic flags
     baseParser = argparse.ArgumentParser(add_help=False)
-    baseParser.add_argument('--writer')
+    baseParser.add_argument('--writer', help='The writer to operate on')
+    baseParser.add_argument('--name', help='The name of the writer being operated on')
+    baseParser.add_argument('--email', help='The email of the writer being operated on')
+    baseParser.add_argument('--language', help='The name of the language being operated on')
     argParser = argparse.ArgumentParser(parents=[baseParser], add_help=False)
-    argParser.add_argument('--name', help='The name of the writer being operated on')
-    argParser.add_argument('--email', help='The email of the writer being operated on')
-    argParser.add_argument('--language', nargs='*' ,help='The name of the language being operated on')
     argParser.add_argument('--createWriter', help='Create a new writer with specified info')
     argParser.add_argument('--deleteWriter', help='Remove the specified writer')
     argParser.add_argument('--addLanguage', nargs='+', help='Add a language to the specified writer')
     argParser.add_argument('--assignProblems', action='store_true', help='Assign problems to writers')
     argParser.add_argument('--generateHackerrankZip', help='Generate the ZIP file containing HR I/O')
-    argParser.add_argument('--todo', help='List the problems that a given writer has yet to do')
     argParser.add_argument('--help', action='store_true')
     argParser.add_argument('--diff', action='store_true', help='Show the diff of incorrect solutions')
     argParser.add_argument('--file', action='store_true', help='Save outputs to file')
