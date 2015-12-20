@@ -40,7 +40,8 @@ def operate(args):
     elif command == EDIT_COMMAND:
         edit_writer(commandPositionals[0], args.name, args.email, args.language)
     else:
-        invalid_command(args)
+        #TODO: Change this print statement to the new output format
+        print('Error: {} is not a valid writers command'.format(command))
 
 def add_to_subparser_object(subparserObject, parentParser):
     writerParser = subparserObject.add_parser(SUBPARSER_KEYWORD, parents=[parentParser])
@@ -154,9 +155,6 @@ def _get_filtered_writers(nameContains: str, emailContains: str, knowsLanguages:
 
     return filteredWriterList
 
-def invalid_command(args):
-    print("invalid")
-
 def import_writers(csvFiles: list):
     for csvFile in csvFiles:
         relativePath = fileops.join_path(PathMapper._rootPath, csvFile)
@@ -165,7 +163,6 @@ def import_writers(csvFiles: list):
             _create_writer_from_list(individualWriterDataChunk)
 
 def _create_writer_from_list(datalist: list):
-    print(datalist)
     newWriter = Writer(writerPath = datalist[0], writerName = datalist[1],
             writerEmail = datalist[2])
     newWriter.create()

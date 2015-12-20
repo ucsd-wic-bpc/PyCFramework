@@ -34,8 +34,6 @@ def parse_arguments(arguments, output=sys.stdout):
     baseParser.add_argument('--email', help='The email of the writer being operated on')
     baseParser.add_argument('--language', nargs='*', help='The name of the language being operated on')
     argParser = argparse.ArgumentParser(parents=[baseParser], add_help=False)
-    argParser.add_argument('--createWriter', help='Create a new writer with specified info')
-    argParser.add_argument('--deleteWriter', help='Remove the specified writer')
     argParser.add_argument('--addLanguage', nargs='+', help='Add a language to the specified writer')
     argParser.add_argument('--assignProblems', action='store_true', help='Assign problems to writers')
     argParser.add_argument('--generateHackerrankZip', help='Generate the ZIP file containing HR I/O')
@@ -43,9 +41,6 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--diff', action='store_true', help='Show the diff of incorrect solutions')
     argParser.add_argument('--file', action='store_true', help='Save outputs to file')
     argParser.add_argument('--importWriters', help='Import writers from a CSV file in the format of "folder;name;email;lang1,lang2,lang3')
-    #argParser.add_argument('--writer', help='The writer to operate on')
-    #argParser.add_argument('writerFolder', help='The folder for the writer to operate on',
-            #nargs='*')
     argParser.add_argument('--problems', help='The number of the problem to operate on')
     subparsers = argParser.add_subparsers()
     writersSubparser.add_to_subparser_object(subparsers, baseParser)
@@ -69,41 +64,6 @@ def parse_arguments(arguments, output=sys.stdout):
             return None
 
         return args
-
-def get_indiv_writer_details(writerFolder):
-    writerObject = Writer.load_from_folder(writerFolder)
-    if writerObject is None:
-        raise PyCException('Error: {} is an invalid Writer'.format(writerFolder))
-    else:
-        return str(writerObject)
-
-def get_writer_details(writerFolders):
-    writerDetails = []
-    for writer in writerFolders:
-        writerDetails.append(get_indiv_writer_details(writer))
-
-    return '\n'.join(writerDetails)
-    
-def create_writer(writerFolder, writerName, writerEmail):
-    if writerEmail is None:
-        raise PyCException('Error: No email specified')
-
-    if writerName is None:
-        raise PyCException('Error: No name specified')
-
-    newWriter = Writer(writerPath=writerFolder, writerName=writerName, 
-            writerEmail=writerEmail)
-    try:
-        newWriter.create()
-    except Exception as e:
-        raise PyCException('Error: Could not create writer')
-
-def delete_writer(writerFolder):
-    writerToDelete = Writer.load_from_folder(writerFolder)
-    if writerToDelete is None:
-        raise PyCException('Error: {} is an invalid writer'.format(writerFolder))
-    else:
-        writerToDelete.delete()
 
 def solution_passes_case(solution, case):
     solutionOutput = solution.get_output(case.inputContents)
@@ -149,13 +109,6 @@ def get_best_candidate(writerList, languageName):
         if writer.knows_language(languageName):
             return writer
 
-def get_todo_list(writerFolder):
-    writer = Writer.load_from_folder(writerFolder)
-    if writer is None:
-        raise PyCException('Error: {} is an invalid writer'.format(writerFolder))
-
-    return ['{} in {}\n'.format(problem[0], problem[1]) for problem in writer.get_assigned_problems_not_started()]
-
 def handle_optional_args(arguments, output=sys.stdout) -> int:
     """
     Handles optional args given by arguments. 
@@ -166,41 +119,12 @@ def handle_optional_args(arguments, output=sys.stdout) -> int:
     if arguments is None:
         return 0
 
-    if arguments.listWriter:
-        details = get_writer_details(arguments.listWriter)
-        for detail in details:
-            output.write(detail)
-        return 0
-
-    elif arguments.createWriter:
-        create_writer(arguments.createWriter, arguments.name, arguments.email)
-        return 0
-
-    elif arguments.deleteWriter:
-        delete_writer(arguments.deleteWriter)
-        return 0
-
     elif arguments.addLanguage:
         add_language_to_writer(arguments.addLanguage, arguments.language)
         return 0
 
     elif arguments.assignProblems:
         assign_problems()
-        return 0
-
-    elif arguments.todo:
-        todoList = get_todo_list(arguments.todo)
-        for todo in todoList:
-            output.write(todo)
-        return 0
-
-    elif arguments.importWriters:
-        writerDataList = fileops.parse_csv(arguments.importWriters)
-        for dataChunk in writerDataList:
-            w = Writer(writerPath = dataChunk[0], writerName = dataChunk[1],
-                    writerEmail = dataChunk[2])
-            w.create()
-            w.add_known_language_from_list(dataChunk[3])
         return 0
 
     elif arguments.generateHackerrankZip:
