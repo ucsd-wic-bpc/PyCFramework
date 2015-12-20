@@ -36,7 +36,7 @@ def operate(args):
     elif command == DELETE_COMMAND:
         delete_writer(commandPositionals, args)
     elif command == IMPORT_COMMAND:
-        import_writers(args)
+        import_writers(commandPositionals)
     elif command == EDIT_COMMAND:
         edit_writer(commandPositionals[0], args.name, args.email, args.language)
     else:
@@ -121,8 +121,7 @@ def edit_writer(writer, writerName, writerEmail, writerLanguageList):
 
     if not writerLanguageList is None:
         writerObject.clear_known_languages()
-        for languageName in writerLanguageList:
-            writerObject._add_known_language_from_name(languageName)
+        writerObject.add_known_language_from_list(writerLanguageList)
 
     writerObject.save_changes()
     
@@ -158,5 +157,15 @@ def _get_filtered_writers(nameContains: str, emailContains: str, knowsLanguages:
 def invalid_command(args):
     print("invalid")
 
-def import_writers(args):
-    print("importing")
+def import_writers(csvFiles: list):
+    for csvFile in csvFiles:
+        writerDataList = fileops.parse_csv(csvFile)
+        _create_writer_from_list(writerDataList)
+
+def _create_writer_from_list(datalist: list):
+    newWriter = Writer(writerPath = datalist[0], writerName = datalist[1],
+            writerlist = datalist[2])
+    newWriter.create()
+    newWriter.add_known_language_from_list(datalist[3])
+
+
