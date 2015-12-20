@@ -34,7 +34,6 @@ def parse_arguments(arguments, output=sys.stdout):
     baseParser.add_argument('--email', help='The email of the writer being operated on')
     baseParser.add_argument('--language', nargs='*', help='The name of the language being operated on')
     argParser = argparse.ArgumentParser(parents=[baseParser], add_help=False)
-    argParser.add_argument('--addLanguage', nargs='+', help='Add a language to the specified writer')
     argParser.add_argument('--assignProblems', action='store_true', help='Assign problems to writers')
     argParser.add_argument('--generateHackerrankZip', help='Generate the ZIP file containing HR I/O')
     argParser.add_argument('--help', action='store_true')
@@ -73,18 +72,6 @@ def solution_passes_case(solution, case):
 
     return (solutionOutput == case.outputContents, solutionOutput)
 
-def add_language_to_writer(writerFolders, languageNames):
-    if languageNames is None or len(languageNames) == 0:
-        raise PyCException('Error: Must specify a language')
-
-    for writerFolder in writerFolders:
-        writer = Writer.load_from_folder(writerFolder)
-        if writer is None:
-            raise PyCException('Error: {} is an invalid writer'.format(writerFolder))
-
-        for languageName in languageNames:
-            writer.add_known_language(languageName)
-
 def assign_problems():
     writerList = Writers.get_all_writers()
     for writer in writerList:
@@ -117,10 +104,6 @@ def handle_optional_args(arguments, output=sys.stdout) -> int:
     """
     # If arguments is None, only the help flag was provided
     if arguments is None:
-        return 0
-
-    elif arguments.addLanguage:
-        add_language_to_writer(arguments.addLanguage, arguments.language)
         return 0
 
     elif arguments.assignProblems:
