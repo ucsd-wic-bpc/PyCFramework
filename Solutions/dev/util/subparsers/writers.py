@@ -8,6 +8,8 @@
 ################################################################################
 from util.writer import Writer, Writers
 from util.perror import PyCException
+from util import fileops
+from util.pathmapper import PathMapper
 
 SUBPARSER_KEYWORD = 'writers'
 LIST_COMMAND = 'list'
@@ -30,9 +32,9 @@ def operate(args):
     elif command == TODO_COMMAND:
         display_todo_for_writer(commandPositionals, args)
     elif command == ADD_COMMAND:
-        add_writer(args)
+        add_writer(commandPositionals, args)
     elif command == DELETE_COMMAND:
-        delete_writer(args)
+        delete_writer(commandPositionals, args)
     elif command == IMPORT_COMMAND:
         import_writers(args)
     elif command == EDIT_COMMAND:
@@ -124,8 +126,34 @@ def edit_writer(writer, writerName, writerEmail, writerLanguageList):
 
     writerObject.save_changes()
     
-def delete_writer(args):
-    print("delete")
+def delete_writer(writers: list, args):
+    for writer in writers:
+        writerToDelete = Writer.load_from_folder(writer)
+        if writerToDelete is None:
+            raise PyCException('Error: {} is an invalid writer'.format(writer))
+
+        writerToDelete.delete()
+
+def _get_filtered_writers(nameContains: str, emailContains: str, knowsLanguages: list):
+    writerList = Writers.get_all_writers()
+    filteredWriterList = []
+    for writer in writerList:
+        if not nameContains is None:
+            if not nameContains in writer.name:
+                continue
+
+        if not emailContains is None:
+            if not emailContains in writer.email:
+                continue
+
+        if not knowsLanguages is None:
+            for language in knowsLanguages:
+                if not writer.knows_language(language):
+                    continue
+
+        filteredWriterList.append(writer)
+
+    return filteredWriterList
 
 def invalid_command(args):
     print("invalid")

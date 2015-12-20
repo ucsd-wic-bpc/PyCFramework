@@ -32,7 +32,7 @@ def parse_arguments(arguments, output=sys.stdout):
     baseParser.add_argument('--writer', help='The writer to operate on')
     baseParser.add_argument('--name', help='The name of the writer being operated on')
     baseParser.add_argument('--email', help='The email of the writer being operated on')
-    baseParser.add_argument('--language', help='The name of the language being operated on')
+    baseParser.add_argument('--language', nargs='*', help='The name of the language being operated on')
     argParser = argparse.ArgumentParser(parents=[baseParser], add_help=False)
     argParser.add_argument('--createWriter', help='Create a new writer with specified info')
     argParser.add_argument('--deleteWriter', help='Remove the specified writer')
