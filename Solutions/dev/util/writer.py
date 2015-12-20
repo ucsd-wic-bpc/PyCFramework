@@ -61,6 +61,14 @@ class Writer:
 
         self._write_datafile()
 
+    def clear_known_languages(self):
+        self.knownLanguages = {}
+
+
+    def clear_known_languages_and_save(self):
+        self.clear_known_languages()
+        self.save_changes()
+
     def knows_language(self, languageName):
         return languageName in self.knownLanguages
 
@@ -106,6 +114,18 @@ class Writer:
         fileops.make(self._get_datafile_path(), fileops.FileType.FILE)
         Writers.add_writer(self._path)
         self._write_datafile()
+
+    """
+    Updates the currently saved files corresponding to this writer.
+    """
+    def save_changes(self):
+        if self._path is None or self._path == '':
+            raise Exception('Cannot save writer without path')
+
+        if not Writers.writer_exists(self._path):
+            self.create()
+        else:
+            self._write_datafile()
 
     def delete(self):
         if self._path is None or self._path == '':

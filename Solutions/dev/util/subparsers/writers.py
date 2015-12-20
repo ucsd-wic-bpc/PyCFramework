@@ -36,7 +36,7 @@ def operate(args):
     elif command == IMPORT_COMMAND:
         import_writers(args)
     elif command == EDIT_COMMAND:
-        edit_writer(args)
+        edit_writer(commandPositionals[0], args.name, args.email, args.language)
     else:
         invalid_command(args)
 
@@ -107,11 +107,23 @@ def _quick_create_writers(writers: list):
             raise PyCException('Error: Could not create writer {}'.format(writer))
 
 def edit_writer(writer, writerName, writerEmail, writerLanguageList):
-    # TODO: Make edit writer change the details of the given writer and then
-    # write the details to the writer's file.
-    print("edit")
+    writerObject = Writer.load_from_folder(writer)
+    if writer is None:
+        raise PyCException('Error: Writer {} does not exist'.format(writer))
 
+    if not writerName is None:
+        writerObject.name = writerName
 
+    if not writerEmail is None:
+        writerObject.email = writerEmail
+
+    if not writerLanguageList is None:
+        writerObject.clear_known_languages()
+        for languageName in writerLanguageList:
+            writerObject._add_known_language_from_name(languageName)
+
+    writerObject.save_changes()
+    
 def delete_writer(args):
     print("delete")
 
