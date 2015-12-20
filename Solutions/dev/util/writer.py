@@ -112,7 +112,7 @@ class Writer:
 
         fileops.make(self._path, fileops.FileType.DIRECTORY)
         fileops.make(self._get_datafile_path(), fileops.FileType.FILE)
-        Writers.add_writer(self._path)
+        Writers.add_writer(fileops.get_basename(self._path))
         self._write_datafile()
 
     """
@@ -122,7 +122,7 @@ class Writer:
         if self._path is None or self._path == '':
             raise Exception('Cannot save writer without path')
 
-        if not Writers.writer_exists(self._path):
+        if not Writers.writer_exists(fileops.get_basename(self._path)):
             self.create()
         else:
             self._write_datafile()
