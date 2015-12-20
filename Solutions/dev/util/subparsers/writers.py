@@ -22,6 +22,8 @@ IMPORT_COMMAND = 'import'
 def operate(args):
     commandArg = args.command
     if commandArg is None:
+        # TODO: Switch to new output format
+        print('Error: No command word was provided for writers module')
         return
 
     commandPositionals = commandArg[1:]
