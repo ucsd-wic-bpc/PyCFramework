@@ -226,12 +226,6 @@ class Writer:
         """
         return cls.load_from_path(fileops.join_path(PathMapper._rootPath, folderName))
 
-    @classmethod
-    def get_all_writers(cls):
-        """
-        Returns a list of all writers
-        """
-
 class Writers:
     """
     Handle the .writers.json config file
@@ -299,3 +293,10 @@ class Writers:
             cls.writers = loadedContents
         else:
             cls.writers = []
+
+    @classmethod
+    def writer_exists(cls, writerName):
+        if cls.writers is None:
+            cls._load_from_config()
+
+        return writerName in cls.writers

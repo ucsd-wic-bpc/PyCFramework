@@ -13,6 +13,7 @@ SUBPARSER_KEYWORD = 'writers'
 LIST_COMMAND = 'list'
 TODO_COMMAND = 'todo'
 ADD_COMMAND = 'add'
+EDIT_COMMAND = 'edit'
 DELETE_COMMAND = 'delete'
 IMPORT_COMMAND = 'import'
 
@@ -34,6 +35,8 @@ def operate(args):
         delete_writer(args)
     elif command == IMPORT_COMMAND:
         import_writers(args)
+    elif command == EDIT_COMMAND:
+        edit_writer(args)
     else:
         invalid_command(args)
 
@@ -81,8 +84,33 @@ def _get_todo_str_for_writer(writer):
         problem[0], problem[1]) for problem in 
         writer.get_assigned_problems_not_started()]))
 
-def add_writer(args):
-    print("add")
+def add_writer(writers: list, args):
+    # There are two ways to add writers. The first of which being simply 
+    # specifying many folder names, the second of which being the specification
+    # of a single folder name as well as many details associated with that
+    # writer.
+    # Test to see if the user is adding using method 1 or 2
+    _quick_create_writers(writers)
+    if len(writers) == 1:
+        edit_writer(writers[0], args.name, args.email, args.language)
+
+def _quick_create_writers(writers: list):
+    for writer in writers:
+        if Writers.writer_exists(writer):
+            raise PyCException('Error: Writer {} already exists'.format(writer))
+        
+        mappedWriterPath = fileops.join_path(PathMapper._rootPath, writer)
+        newWriter = Writer(writerPath=mappedWriterPath)
+        try:
+            newWriter.create()
+        except Exception as e:
+            raise PyCException('Error: Could not create writer {}'.format(writer))
+
+def edit_writer(writer, writerName, writerEmail, writerLanguageList):
+    # TODO: Make edit writer change the details of the given writer and then
+    # write the details to the writer's file.
+    print("edit")
+
 
 def delete_writer(args):
     print("delete")
