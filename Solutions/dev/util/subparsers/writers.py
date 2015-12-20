@@ -159,12 +159,15 @@ def invalid_command(args):
 
 def import_writers(csvFiles: list):
     for csvFile in csvFiles:
-        writerDataList = fileops.parse_csv(csvFile)
-        _create_writer_from_list(writerDataList)
+        relativePath = fileops.join_path(PathMapper._rootPath, csvFile)
+        writerDataList = fileops.parse_csv(relativePath)
+        for individualWriterDataChunk in writerDataList:
+            _create_writer_from_list(individualWriterDataChunk)
 
 def _create_writer_from_list(datalist: list):
+    print(datalist)
     newWriter = Writer(writerPath = datalist[0], writerName = datalist[1],
-            writerlist = datalist[2])
+            writerEmail = datalist[2])
     newWriter.create()
     newWriter.add_known_language_from_list(datalist[3])
 
