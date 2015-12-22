@@ -25,3 +25,11 @@ class PathMapper:
         Returns the full configuration directory path
         """
         return fileops.join_path(cls._rootPath, cls.CONFIG_DIR)
+
+    @classmethod
+    def get_mapped_path(cls, path):
+        """
+        Returns the root path appended with the provided path
+        """
+        return fileops.join_path(cls._rootPath, path)
+        
