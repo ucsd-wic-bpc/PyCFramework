@@ -8,6 +8,7 @@
 ################################################################################
 from util.writer import Writer, Writers
 from util import case as CaseManager
+from util.language import ExecutionError
 
 SUBPARSER_KEYWORD = "test"
 
@@ -20,6 +21,7 @@ def operate(args):
     args: Namespace - The arguments pased via CLI
     """
     writerList = args.writers
+    test(writerList, args.language, args.problems)
 
 def add_to_subparser_object(subparserObject, parentParser):
     """
@@ -121,7 +123,41 @@ def _test_solution_against_cases(solution, cases:list):
     Tests a single solution against a list of cases and outputs results
     to stdout. 
 
+    Arguments:
+    solution    - The solution to test
+    cases: list - The list of cases to test the solution against
     """
+    # First, print the header
+    # Writer    Problem   Language  CaseType    Case#   Status  Message
+    formattingStr = "{0: <10}\t{1: <10}\t{2: <10}\t{3: <10}\t{4: <10}\t{5: <10}\t{6}"
+
+    # Compile first
+    try:
+        solution.compile()
+    except ExecutionError as e:
+        print(formattingStr.format(solution.solutionWriter.name, 
+            solution.problemNumber, solution.solutionLanguage.name, "COMPILE",
+            "COMPILE", 'FAIL', 'Compile Error'))
+        return
+
+    for case in cases:
+        try:
+            solutionOutput = solution.get_output(case.inputContents)
+        except ExecutionError as e:
+            print(formattingStr.format(solution.solutionWriter,
+                solution.problemNumber, solution.solutionLanguage.name, 
+                case.get_case_string(), case.caseNumber, 'FAIL',
+                'Runtime Error'))
+            continue
+
+        if not isinstance(case, KnownCase):
+            continue
+
+        resultsStr = "PASS" if solutionOutput == case.outputContents else "FAIL"
+        print(formattingStr.format(solution.solutionWriter.name,
+            solution.problemNumber, solution.solutionLanguage.name,
+            case.get_case_string(), case.caseNumber, resultsStr, ""))
+
 
 def test(writerNames: list, languageNames: list, problemStrings: list):
     """
@@ -139,4 +175,9 @@ def test(writerNames: list, languageNames: list, problemStrings: list):
     # load all the cases
     cases = CaseManager.get_all_cases()
 
+    formattingStr = "{0: <10}\t{1: <10}\t{2: <10}\t{3: <10}\t{4: <10}\t{5: <10}\t{6}"
+    print(formattingStr.format("Writer", "Problem", "Language", "CaseType", "Case", "Status", "Message"))
+
     # Now test all of the solutions
+    for solution in solutionsToTest:
+        _test_solution_against_cases(solution, cases[int(solution.problemNumber)])
