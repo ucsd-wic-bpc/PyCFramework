@@ -135,7 +135,7 @@ def _test_solution_against_cases(solution, cases:list):
     try:
         solution.compile()
     except ExecutionError as e:
-        print(formattingStr.format(solution.solutionWriter.name, 
+        print(formattingStr.format(solution.solutionWriter, 
             solution.problemNumber, solution.solutionLanguage.name, "COMPILE",
             "COMPILE", 'FAIL', 'Compile Error'))
         return

@@ -123,7 +123,7 @@ class AppliedLanguage(Language):
 
         compileCommand = [self._compileCommand]
         compileCommand.extend(self._compileArguments)
-        if not subprocess.call(compileCommand) == 0:
+        if not subprocess.call(compileCommand, stderr=open(os.devnull, 'w')) == 0:
             raise ExecutionError('Failed to compile')
 
         return fileops.get_path_with_changed_extension(self._path, 
