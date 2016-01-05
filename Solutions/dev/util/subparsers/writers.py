@@ -10,14 +10,17 @@ from util.writer import Writer, Writers
 from util.perror import PyCException
 from util import fileops
 from util.pathmapper import PathMapper
+from util.language import Languages
+from util.definitions import Definitions
 
 SUBPARSER_KEYWORD = 'writers'
-LIST_COMMAND = 'list'
-TODO_COMMAND = 'todo'
-ADD_COMMAND = 'add'
-EDIT_COMMAND = 'edit'
+LIST_COMMAND   = 'list'
+TODO_COMMAND   = 'todo'
+ADD_COMMAND    = 'add'
+EDIT_COMMAND   = 'edit'
 DELETE_COMMAND = 'delete'
 IMPORT_COMMAND = 'import'
+ASSIGN_COMMAND = 'assign'
 
 def operate(args):
     """
@@ -49,6 +52,8 @@ def operate(args):
         import_writers(commandPositionals)
     elif command == EDIT_COMMAND:
         edit_writer(commandPositionals[0], args.name, args.email, args.language)
+    elif command == ASSIGN_COMMAND:
+        assign_problems(
     else:
         #TODO: Change this print statement to the new output format
         print('Error: {} is not a valid writers command'.format(command))
@@ -298,3 +303,38 @@ def _create_writer_from_list(datalist: list):
             writerEmail = datalist[2])
     newWriter.create()
     newWriter.add_known_language_from_list(datalist[3])
+
+def assign_problems(writerNames: list, problemNumbers: list, languageNames: list):
+    """
+    Assigns problems to the given writers following the given filters. If
+    no filters are provided, assigns all problems to all writers
+
+    Arguments:
+    writerNames: list    - The list of writers to assign problems to
+    problemNumbers: list - The problems to assign
+    languageNames: list  - The languages to assign
+    """
+    loadedWriterList = []
+    # First, load all writers
+    if writerNames is None or len(writerNames) == 0:
+        loadedWriterList = Writers.get_all_writers()
+    else:
+        for writerName in writerNames:
+            loadedWriter = Writer.load_from_folder(writerName)
+            if loadedWriter is None:
+                raise PyCException('Error: {} is an invalid writer'.format(writerName))
+            else:
+                loadedWriterList.append(loadedWriter)
+
+    # Now, get the problem numbers
+    problemNumbers = []
+    if problemNumbers is None:
+        problemNumbers = range(1, Definitions.get_value('problem_count')+1)
+    # TODO: Make problems flag get the correct problems
+
+    # Now, get the languages
+    languages = []
+    if languageNames is None:
+        languages = Langauges.get_all_language_names()
+    # TODO: Make languages flag get the correct languages
+    
