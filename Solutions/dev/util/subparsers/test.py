@@ -9,6 +9,7 @@
 from util.writer import Writer, Writers
 from util import case as CaseManager
 from util.language import ExecutionError
+from util.case import KnownCase
 
 SUBPARSER_KEYWORD = "test"
 
@@ -21,7 +22,7 @@ def operate(args):
     args: Namespace - The arguments pased via CLI
     """
     writerList = args.writers
-    test(writerList, args.language, args.problems)
+    test(writerList, args.language, args.problems, args.verbose)
 
 def add_to_subparser_object(subparserObject, parentParser):
     """
@@ -46,7 +47,7 @@ def _get_loaded_writers(writerNames: list = None) -> list:
     writerNames: list - The list of names to load writers for. If None, all
                         writers are loaded.
     """
-    if writerNames is None:
+    if writerNames is None or len(writerNames) == 0:
         return Writers.get_all_writers()
 
     loadedWriters = []
@@ -118,7 +119,7 @@ def _get_filtered_solutions(writerNames: list, languageNames: list,
 
     return solutionsToTest
 
-def _test_solution_against_cases(solution, cases:list):
+def _test_solution_against_cases(solution, cases:list, outputToStderr: bool):
     """
     Tests a single solution against a list of cases and outputs results
     to stdout. 
@@ -133,16 +134,16 @@ def _test_solution_against_cases(solution, cases:list):
 
     # Compile first
     try:
-        solution.compile()
+        solution.compile(verbose=outputToStderr)
     except ExecutionError as e:
-        print(formattingStr.format(solution.solutionWriter, 
-            solution.problemNumber, solution.solutionLanguage.name, "COMPILE",
+        print(formattingStr.format(solution.solutionWriter, solution.problemNumber, solution.solutionLanguage.name, "COMPILE",
             "COMPILE", 'FAIL', 'Compile Error'))
         return
 
     for case in cases:
         try:
-            solutionOutput = solution.get_output(case.inputContents)
+            solutionOutput = solution.get_output(case.inputContents,
+                    outputToStderr=outputToStderr)
         except ExecutionError as e:
             print(formattingStr.format(solution.solutionWriter,
                 solution.problemNumber, solution.solutionLanguage.name, 
@@ -154,12 +155,14 @@ def _test_solution_against_cases(solution, cases:list):
             continue
 
         resultsStr = "PASS" if solutionOutput == case.outputContents else "FAIL"
-        print(formattingStr.format(solution.solutionWriter.name,
+        commentStr = "Correct Solution" if resultsStr == "PASS" else "Incorrect Solution"
+        print(formattingStr.format(solution.solutionWriter,
             solution.problemNumber, solution.solutionLanguage.name,
-            case.get_case_string(), case.caseNumber, resultsStr, ""))
+            case.get_case_string(), case.caseNumber, resultsStr, commentStr))
 
 
-def test(writerNames: list, languageNames: list, problemStrings: list):
+def test(writerNames: list, languageNames: list, problemStrings: list, 
+        outputToStderr: bool):
     """
     Tests solutions based on the arguments provided and outputs results to
     stdout. If all arguments are none, all solutions are tested
@@ -180,4 +183,5 @@ def test(writerNames: list, languageNames: list, problemStrings: list):
 
     # Now test all of the solutions
     for solution in solutionsToTest:
-        _test_solution_against_cases(solution, cases[int(solution.problemNumber)])
+        _test_solution_against_cases(solution, cases[int(solution.problemNumber)],
+                outputToStderr)
