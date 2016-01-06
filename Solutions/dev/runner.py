@@ -24,6 +24,7 @@ from util.language import Languages
 from util.parse import NumberParse
 from util.variables import Variables
 from util.subparsers import writers as writersSubparser
+from util.subparsers import test as testSubparser
 
 def parse_arguments(arguments, output=sys.stdout):
     argParser = PCArgParseFactory.get_argument_parser(output)
@@ -32,7 +33,9 @@ def parse_arguments(arguments, output=sys.stdout):
     baseParser.add_argument('--writer', help='The writer to operate on')
     baseParser.add_argument('--name', help='The name of the writer being operated on')
     baseParser.add_argument('--email', help='The email of the writer being operated on')
-    baseParser.add_argument('--language', nargs='*', help='The name of the language being operated on')
+    baseParser.add_argument('--language', nargs='+', help='The name of the language being operated on')
+    baseParser.add_argument('--problems', nargs='+', help='The number of the problem to operate on')
+    baseParser.add_argument('--verbose', action='store_true', help='Display verbose output')
     argParser = argparse.ArgumentParser(parents=[baseParser], add_help=False)
     argParser.add_argument('--assignProblems', action='store_true', help='Assign problems to writers')
     argParser.add_argument('--generateHackerrankZip', help='Generate the ZIP file containing HR I/O')
@@ -40,9 +43,9 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser.add_argument('--diff', action='store_true', help='Show the diff of incorrect solutions')
     argParser.add_argument('--file', action='store_true', help='Save outputs to file')
     argParser.add_argument('--importWriters', help='Import writers from a CSV file in the format of "folder;name;email;lang1,lang2,lang3')
-    argParser.add_argument('--problems', help='The number of the problem to operate on')
     subparsers = argParser.add_subparsers()
     writersSubparser.add_to_subparser_object(subparsers, baseParser)
+    testSubparser.add_to_subparser_object(subparsers, baseParser)
 
 
     if len(arguments) == 0:

@@ -24,7 +24,7 @@ class Solution:
         return "Problem {} written in {}".format(str(self.problemNumber), 
                 self.solutionLanguage.name)
 
-    def get_output(self, inputContents: str) -> str:
+    def get_output(self, inputContents: str, outputToStderr: bool=False) -> str:
         """
         Runs the solution file given by self._path by delegating to its languages execute.
         Returns output printed to stdout
@@ -33,10 +33,12 @@ class Solution:
         if self.solutionLanguage is None:
             return ''
 
-        return self.solutionLanguage.execute_code(self._path, inputContents)
+        return self.solutionLanguage.execute_code(self._path, inputContents,
+                verbose=outputToStderr)
+                
 
-    def compile(self):
-        self.solutionLanguage.compile_code(self._path)
+    def compile(self, verbose=False):
+        self.solutionLanguage.compile_code(self._path, verbose=verbose)
 
     @staticmethod
     def is_solution_file(path):

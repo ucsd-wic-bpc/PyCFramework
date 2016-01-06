@@ -10,7 +10,7 @@ from util import fileops
 from util.pathmapper import PathMapper
 from util.variables import Variables
 import subprocess
-import io
+import io, os, sys
 
 class ExecutionError(Exception):
     def __init__(self, message):
@@ -62,11 +62,12 @@ class Language:
 
         return languageObject
 
-    def execute_code(self, codePath, inputContents):
-        return AppliedLanguage.get_applied_language(codePath, self).execute_code(inputContents)
+    def execute_code(self, codePath, inputContents, verbose=False):
+        return AppliedLanguage.get_applied_language(codePath, self).execute_code(inputContents, 
+                verbose=verbose)
 
-    def compile_code(self, codePath):
-        AppliedLanguage.get_applied_language(codePath, self)._compile_code()
+    def compile_code(self, codePath, verbose=False):
+        AppliedLanguage.get_applied_language(codePath, self)._compile_code(verbose=verbose)
 
 class AppliedLanguage(Language):
     # A language that's applied to a specific solution
@@ -112,7 +113,7 @@ class AppliedLanguage(Language):
                 stringCopy[i] = AppliedLanguage._get_formatted_str_rec(formatDict, stringCopy[i])
             return stringCopy
 
-    def _compile_code(self):
+    def _compile_code(self, verbose=False):
         """
         Attempts to compile the code found at the given path
 
@@ -123,13 +124,14 @@ class AppliedLanguage(Language):
 
         compileCommand = [self._compileCommand]
         compileCommand.extend(self._compileArguments)
-        if not subprocess.call(compileCommand) == 0:
+        if not subprocess.call(compileCommand, stderr = (open(os.devnull, 'w')
+            if not verbose else sys.stderr)) == 0:
             raise ExecutionError('Failed to compile')
 
         return fileops.get_path_with_changed_extension(self._path, 
                 self._runExtension)
 
-    def execute_code(self, inputContents):
+    def execute_code(self, inputContents, verbose=False):
         """
         Executes the code by first compiling it (if necessary), then running it,
         then returning the output or an ExecutionError if one occurred
@@ -142,7 +144,8 @@ class AppliedLanguage(Language):
         runCommand.extend(self._runArguments)
         try:
             encodedInput = inputContents.encode('utf-8')
-            output = subprocess.check_output(runCommand, input=encodedInput).decode('utf-8')
+            output = subprocess.check_output(runCommand, input=encodedInput, 
+                stderr = (open(os.devnull, 'w') if not verbose else sys.stderr)).decode('utf-8')
             if not output is None:
                 output = output.replace('\r','')
         except subprocess.CalledProcessError as e:
