@@ -84,10 +84,6 @@ def handle_optional_args(arguments, output=sys.stdout) -> int:
     if arguments is None:
         return 0
 
-    elif arguments.assignProblems:
-        assign_problems()
-        return 0
-
     elif arguments.generateHackerrankZip:
         generate_hackerrank_zip(arguments.generateHackerrankZip)
         return 0
@@ -194,29 +190,6 @@ def get_problem_list(problemString):
     return NumberParse().str_to_list_range( problemString, 
             int(Definitions.get_value('problem_count')), 1)
 
-def handle_positional_args(arguments, output=sys.stdout):
-    # Check if user did something wrong
-    if arguments is None:
-        PCArgParseFactory.get_argument_parser(output).print_help()
-        return
-
-    if arguments.writerFolder is None or len(arguments.writerFolder) == 0:
-        arguments.writerFolder = Writers.get_all_writer_names()
-
-    # Now we need to load the writers that the user specified
-    for writerFolder in arguments.writerFolder:
-        writer = Writer.load_from_folder(writerFolder)
-        if writer is None:
-            raise PyCException('Error: {} is an invalid writer'.format(writerFolder))
-
-        # If no problem was specified, test all solutions
-        problems = get_problem_list(arguments.problems)
-        for problem in get_problem_list(arguments.problems):
-            testResults = get_test_results(writer, problem, arguments.diff,
-                    arguments.file)
-            for result in testResults:
-                output.write(result)
-    
 def main(arguments, out=sys.stdout):
     # Set the path
     PathMapper.set_root_path(os.path.dirname(os.path.abspath(__name__)))
@@ -225,12 +198,6 @@ def main(arguments, out=sys.stdout):
         parsedArgs = parse_arguments(arguments, output=out)
         if handle_optional_args(parsedArgs, output=out) == 0:
             return 0
-    except PyCException as e:
-        out.write(e.message)
-        return 1
-
-    try:
-        handle_positional_args(parsedArgs, output=out)
     except PyCException as e:
         out.write(e.message)
         return 1

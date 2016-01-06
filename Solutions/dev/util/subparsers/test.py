@@ -12,6 +12,7 @@ from util.language import ExecutionError
 from util.case import KnownCase
 
 SUBPARSER_KEYWORD = "test"
+SHOW_PASSING_KEYWORD = "showpass"
 
 def operate(args):
     """
@@ -22,7 +23,7 @@ def operate(args):
     args: Namespace - The arguments pased via CLI
     """
     writerList = args.writers
-    test(writerList, args.language, args.problems, args.verbose)
+    test(writerList, args.language, args.problems, args.verbose, args.showpass)
 
 def add_to_subparser_object(subparserObject, parentParser):
     """
@@ -37,6 +38,7 @@ def add_to_subparser_object(subparserObject, parentParser):
     """
     testParser = subparserObject.add_parser(SUBPARSER_KEYWORD, parents=[parentParser])
     testParser.add_argument('writers', nargs='*')
+    testParser.add_argument('--showpass', action='store_true')
     testParser.set_defaults(func=operate)
 
 def _get_loaded_writers(writerNames: list = None) -> list:
@@ -119,7 +121,8 @@ def _get_filtered_solutions(writerNames: list, languageNames: list,
 
     return solutionsToTest
 
-def _test_solution_against_cases(solution, cases:list, outputToStderr: bool):
+def _test_solution_against_cases(solution, cases:list, outputToStderr: bool,
+        printPassingCases: bool):
     """
     Tests a single solution against a list of cases and outputs results
     to stdout. 
@@ -156,13 +159,15 @@ def _test_solution_against_cases(solution, cases:list, outputToStderr: bool):
 
         resultsStr = "PASS" if solutionOutput == case.outputContents else "FAIL"
         commentStr = "Correct Solution" if resultsStr == "PASS" else "Incorrect Solution"
+        if resultsStr == "PASS" and not printPassingCases:
+            continue
         print(formattingStr.format(solution.solutionWriter,
             solution.problemNumber, solution.solutionLanguage.name,
             case.get_case_string(), case.caseNumber, resultsStr, commentStr))
 
 
 def test(writerNames: list, languageNames: list, problemStrings: list, 
-        outputToStderr: bool):
+        outputToStderr: bool, printPassingCases: bool):
     """
     Tests solutions based on the arguments provided and outputs results to
     stdout. If all arguments are none, all solutions are tested
@@ -184,4 +189,4 @@ def test(writerNames: list, languageNames: list, problemStrings: list,
     # Now test all of the solutions
     for solution in solutionsToTest:
         _test_solution_against_cases(solution, cases[int(solution.problemNumber)],
-                outputToStderr)
+                outputToStderr, printPassingCases)
