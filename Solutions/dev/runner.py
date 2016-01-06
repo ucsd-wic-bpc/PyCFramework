@@ -37,12 +37,10 @@ def parse_arguments(arguments, output=sys.stdout):
     baseParser.add_argument('--problems', nargs='+', help='The number of the problem to operate on')
     baseParser.add_argument('--verbose', action='store_true', help='Display verbose output')
     argParser = argparse.ArgumentParser(parents=[baseParser], add_help=False)
-    argParser.add_argument('--assignProblems', action='store_true', help='Assign problems to writers')
     argParser.add_argument('--generateHackerrankZip', help='Generate the ZIP file containing HR I/O')
     argParser.add_argument('--help', action='store_true')
     argParser.add_argument('--diff', action='store_true', help='Show the diff of incorrect solutions')
     argParser.add_argument('--file', action='store_true', help='Save outputs to file')
-    argParser.add_argument('--importWriters', help='Import writers from a CSV file in the format of "folder;name;email;lang1,lang2,lang3')
     subparsers = argParser.add_subparsers()
     writersSubparser.add_to_subparser_object(subparsers, baseParser)
     testSubparser.add_to_subparser_object(subparsers, baseParser)
@@ -75,29 +73,6 @@ def solution_passes_case(solution, case):
 
     return (solutionOutput == case.outputContents, solutionOutput)
 
-def assign_problems():
-    writerList = Writers.get_all_writers()
-    for writer in writerList:
-        writer.unassign_all_problems()
-
-    for problemNumber in range(1, Definitions.get_value('problem_count')+1):
-        for language in Languages.get_all_language_names():
-            assignedCount = 0
-            for i in range(0, Definitions.get_value('complete_threshold')):
-                if assignedCount >= Definitions.get_value('complete_threshold'):
-                    break
-            
-                writer = get_best_candidate(writerList, language)
-                if not writer is None:
-                    writer.add_assigned_problem(problemNumber, language)
-                    assignedCount += 1
-
-def get_best_candidate(writerList, languageName):
-    # First, sort the writer list by assigned problem count
-    writerList = sorted(writerList, key=lambda x: x.get_number_assigned_problems())
-    for writer in writerList:
-        if writer.knows_language(languageName):
-            return writer
 
 def handle_optional_args(arguments, output=sys.stdout) -> int:
     """
