@@ -10,14 +10,19 @@ from util.writer import Writer, Writers
 from util.perror import PyCException
 from util import fileops
 from util.pathmapper import PathMapper
+from util.language import Languages
+from util.definitions import Definitions
+from random import shuffle
+from collections import deque
 
 SUBPARSER_KEYWORD = 'writers'
-LIST_COMMAND = 'list'
-TODO_COMMAND = 'todo'
-ADD_COMMAND = 'add'
-EDIT_COMMAND = 'edit'
+LIST_COMMAND   = 'list'
+TODO_COMMAND   = 'todo'
+ADD_COMMAND    = 'add'
+EDIT_COMMAND   = 'edit'
 DELETE_COMMAND = 'delete'
 IMPORT_COMMAND = 'import'
+ASSIGN_COMMAND = 'assign'
 
 def operate(args):
     """
@@ -49,6 +54,8 @@ def operate(args):
         import_writers(commandPositionals)
     elif command == EDIT_COMMAND:
         edit_writer(commandPositionals[0], args.name, args.email, args.language)
+    elif command == ASSIGN_COMMAND:
+        assign_problems(commandPositionals, args.problems, args.language)
     else:
         #TODO: Change this print statement to the new output format
         print('Error: {} is not a valid writers command'.format(command))
@@ -298,3 +305,69 @@ def _create_writer_from_list(datalist: list):
             writerEmail = datalist[2])
     newWriter.create()
     newWriter.add_known_language_from_list(datalist[3])
+
+def assign_problems(writerNames: list, problemNumbers: list, languageNames: list):
+    """
+    Assigns problems to the given writers following the given filters. If
+    no filters are provided, assigns all problems to all writers
+
+    Arguments:
+    writerNames: list    - The list of writers to assign problems to
+    problemNumbers: list - The problems to assign
+    languageNames: list  - The languages to assign
+    """
+    #TODO: Improve this so that problems can be assigned dynamically using filters
+    loadedWriterList = []
+    # First, load all writers
+    if writerNames is None or len(writerNames) == 0:
+        loadedWriterList = Writers.get_all_writers()
+    else:
+        for writerName in writerNames:
+            loadedWriter = Writer.load_from_folder(writerName)
+            if loadedWriter is None:
+                raise PyCException('Error: {} is an invalid writer'.format(writerName))
+            else:
+                loadedWriterList.append(loadedWriter)
+
+    for writer in loadedWriterList:
+        writer.unassign_all_problems()
+
+
+    # Now, get the problem numbers
+    problemNumbers = []
+    if problemNumbers is None or len(problemNumbers) == 0:
+        problemNumbers = list(range(1, Definitions.get_value('problem_count')+1))
+        shuffle(problemNumbers)
+    # TODO: Make problems flag get the correct problems
+
+    # Now, get the languages
+    languages = []
+    if languageNames is None:
+        languages = Languages.get_all_language_names()
+    # TODO: Make languages flag get the correct languages
+
+    writerQueue = deque(loadedWriterList)
+
+    for language in languages:
+        for problemNumber in problemNumbers:
+            skippedWriters = deque()
+            i = 0
+            while i < Definitions.get_value('complete_threshold'):
+                if len(writerQueue) == 0:
+                    while not len(skippedWriters) == 0:
+                        writerQueue.append(skippedWriters.popleft())
+                    break
+
+                writer = writerQueue.popleft()
+                if writer.knows_language(language):
+                    writer.add_assigned_problem(problemNumber, language)
+                    skippedWriters.append(writer)
+                else:
+                    skippedWriters.appendleft(writer)
+                    i -= 1
+
+                if i == (Definitions.get_value('complete_threshold')-1):
+                    while not len(skippedWriters) == 0:
+                        writerQueue.append(skippedWriters.popleft())
+
+                i += 1

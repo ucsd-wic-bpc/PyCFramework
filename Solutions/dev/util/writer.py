@@ -104,7 +104,7 @@ class Writer:
             if not started:
                 notStarted.append(assignedProblem)
 
-        return notStarted
+        return sorted(notStarted)
 
     def create(self):
         if self._path is None or self._path == '':
