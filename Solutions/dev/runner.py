@@ -45,7 +45,6 @@ def parse_arguments(arguments, output=sys.stdout):
     writersSubparser.add_to_subparser_object(subparsers, baseParser)
     testSubparser.add_to_subparser_object(subparsers, baseParser)
 
-
     if len(arguments) == 0:
         argParser.print_help()
         return None
@@ -182,13 +181,6 @@ def write_output_list(writer, solution, case, solutionOutputList, includeDiffs=F
             writer.append_file(diffFile, case.get_output_diff(output))
 
         writer.append_file(outFile, output)
-
-def get_problem_list(problemString):
-    if problemString is None:
-        return [None]
-
-    return NumberParse().str_to_list_range( problemString, 
-            int(Definitions.get_value('problem_count')), 1)
 
 def main(arguments, out=sys.stdout):
     # Set the path
