@@ -46,6 +46,12 @@ def add_to_subparser_object(subparserObject, parentParser):
     packageParser.set_defaults(func=operate)
 
 def load_config_file(path=None):
+    """
+    Loads the config file into the global config variable
+
+    Keyword Arguments:
+    path: str - The path to load the config from (default: conf/packages.json)
+    """
     if path is None:
         path = fileops.join_path(PathMapper.get_config_path(), 
                 CONFIGURATION_FILE)
@@ -53,35 +59,50 @@ def load_config_file(path=None):
     global config
     config = fileops.get_json_dict(path)
 
-def _generate_case_naming_dict(caseName: str, caseNumber: int):
-    return { 'caseType' : caseName, 'number'   : caseNumber }
+def _generate_case_naming_dict(ioType: str, caseName: str, caseNumber: int):
+    """
+    Generates a small file naming dictionary to replace naming variables that
+    might be found in the namingScheme configuration.
 
-def _generate_case_naming_dict_with_io(ioType: str, caseName: str, caseNumber: int):
-    namingDict = _generate_case_naming_dict(caseName, caseNumber)
-    namingDict['input_output'] = ioType
-    return namingDict
+    Arguments:
+    ioType: str     - Whether this is the case's input or output (valid: 'input','output')
+    caseName: str   - The type of the case (e.g corner, sample)
+    caseNumber: int - The case number
 
-def _generate_input_case_naming_dict(caseName: str, caseNumber: int):
-    return _generate_case_naming_dict_with_io('input', caseName, caseNumber)
+    Return:
+    The formatting dictionary
+    """
+    if not ioType == 'input' and not ioType == 'output':
+        raise Exception('Code Error: ioType is {}. Valid values are "input" or "output"'.format(ioType))
 
-def _generate_output_case_naming_dict(caseName: str, caseNumber: int):
-    return _generate_case_naming_dict_with_io('output', caseName, caseNumber)
+    return { 'input_output' : ioType, 'caseType' : caseName, 'number' : caseNumber }
 
 def package_case(caseName: str, caseDir: str, cases: list, namingScheme:str):
+    """
+    Packages a specific case type into the given directory, splitting input
+    and output into their own directories.
+
+    Arguments:
+    caseName: str - The name of the case type to package
+    caseDir: str  - The directory to package the case into
+    cases: list   - The list of possible cases to package
+    namingScheme: str - The naming scheme to follow for each file. 
+                        Possible variables are {input_output},{caseType},{number}
+    """
     inputPath = fileops.join_path(caseDir, 'input')
     outputPath = fileops.join_path(caseDir, 'output')
     fileops.make(inputPath, FileType.DIRECTORY)
     fileops.make(outputPath, FileType.DIRECTORY)
-    for case in cases:
-        if case.get_case_string() == caseName:
-            inputNamingDict  = _generate_input_case_naming_dict(caseName, case.caseNumber)
-            outputNamingDict = _generate_output_case_naming_dict(caseName, case.caseNumber)
 
-            inputFilePath = fileops.join_path(inputPath, namingScheme.format(**inputNamingDict))
-            outputFilePath = fileops.join_path(outputPath, namingScheme.format(**outputNamingDict))
+    for case in [c for c in cases if c.get_case_string() == caseName]:
+        inputNamingDict = _generate_case_naming_dict('input', caseName, case.caseNumber)
+        outputNamingDict = _generate_case_naming_dict('output', caseName, case.caseNumber)
 
-            fileops.write_file(inputFilePath, case.inputContents)
-            fileops.write_file(outputFilePath, case.outputContents)
+        inputFilePath = fileops.join_path(inputPath, namingScheme.format(**inputNamingDict))
+        outputFilePath = fileops.join_path(outputPath, namingScheme.format(**outputNamingDict))
+
+        fileops.write_file(inputFilePath, case.inputContents)
+        fileops.write_file(outputFilePath, case.outputContents)
 
 def compress_case(caseName: str, casePath: str, compressionDict: dict):
     if compressionDict is None: return
