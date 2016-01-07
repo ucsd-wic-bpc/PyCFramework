@@ -13,7 +13,7 @@ from util.definitions import Definitions
 
 SUBPARSER_KEYWORD = "package"
 COMPRESSION_KEYWORD = 'compression'
-CONFIGURATION_FILE = "package.json"
+CONFIGURATION_FILE = "packages.json"
 
 TYPES_KEY = 'types'
 config = {}
@@ -50,11 +50,12 @@ def load_config_file(path=None):
         path = fileops.join_path(PathMapper.get_config_path(), 
                 CONFIGURATION_FILE)
 
+    global config
     config = fileops.get_json_dict(path)
 
 def package_case(caseName: str, caseDir: str, cases: list, namingScheme:str):
-    inputPath = fileops.join(caseDir, 'input')
-    outputPath = fileops.join(caseDir, 'output')
+    inputPath = fileops.join_path(caseDir, 'input')
+    outputPath = fileops.join_path(caseDir, 'output')
     fileops.make(inputPath, FileType.DIRECTORY)
     fileops.make(outputPath, FileType.DIRECTORY)
     for case in cases:
@@ -75,17 +76,19 @@ def package_case(caseName: str, caseDir: str, cases: list, namingScheme:str):
             fileops.write_file(outputFilePath, case.outputContents)
 
 def compress_case(caseName: str, casePath: str, compressionDict: dict):
+    print("CASE")
     if compressionDict['enabled']:
         if compressionDict['method'] == 'zip':
             fileops.zipdir(casePath, '{}.zip'.format(casePath))
 
 def package_type(packagePath: str, cases: list, packageType: dict, compressionDict: dict):
-    for typeName, typeDetailsDict in packageType.items():
-        for case in typeDetailsDict['cases']:
-            casePath = fileops.join_path(packagePath, case)
-            fileops.make(casePath, FileType.DIRECTORY)
-            package_case(case, casePath, cases, typeDetailsDict['naming'])
-            compress_case(case, casePath, compressionDict)
+    print("TYPE")
+    for case in packageType['cases']:
+        print("AHHH")
+        casePath = fileops.join_path(packagePath, case)
+        fileops.make(casePath, FileType.DIRECTORY)
+        package_case(case, casePath, cases, packageType['naming'])
+        compress_case(case, casePath, compressionDict)
 
 def package(savePaths: list, configFilePath: str=None, layout: str=None):
     load_config_file(path=configFilePath)

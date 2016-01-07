@@ -25,6 +25,7 @@ from util.parse import NumberParse
 from util.variables import Variables
 from util.subparsers import writers as writersSubparser
 from util.subparsers import test as testSubparser
+from util.subparsers import package as packageSubparser
 
 def parse_arguments(arguments, output=sys.stdout):
     argParser = PCArgParseFactory.get_argument_parser(output)
@@ -44,6 +45,7 @@ def parse_arguments(arguments, output=sys.stdout):
     subparsers = argParser.add_subparsers()
     writersSubparser.add_to_subparser_object(subparsers, baseParser)
     testSubparser.add_to_subparser_object(subparsers, baseParser)
+    packageSubparser.add_to_subparser_object(subparsers, baseParser)
 
     if len(arguments) == 0:
         argParser.print_help()
