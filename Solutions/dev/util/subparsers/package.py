@@ -12,6 +12,7 @@ from util.fileops import FileType
 from util.definitions import Definitions
 
 SUBPARSER_KEYWORD = "package"
+COMPRESSION_KEYWORD = 'compression'
 CONFIGURATION_FILE = "package.json"
 
 TYPES_KEY = 'types'
@@ -68,13 +69,23 @@ def package_case(caseName: str, caseDir: str, cases: list, namingScheme:str):
                     'caseType' : caseName,
                     'number' : case.caseNumber
                     }
+            inputFilePath = fileops.join_path(inputPath, namingScheme.format(**inputNamingDict))
+            outputFilePath = fileops.join_path(outputPath, namingScheme.format(**outputNamingDict))
+            fileops.write_file(inputFilePath, case.inputContents)
+            fileops.write_file(outputFilePath, case.outputContents)
 
-def package_type(packagePath: str, cases: list, packageType: dict):
+def compress_case(caseName: str, casePath: str, compressionDict: dict):
+    if compressionDict['enabled']:
+        if compressionDict['method'] == 'zip':
+            fileops.zipdir(casePath, '{}.zip'.format(casePath))
+
+def package_type(packagePath: str, cases: list, packageType: dict, compressionDict: dict):
     for typeName, typeDetailsDict in packageType.items():
         for case in typeDetailsDict['cases']:
             casePath = fileops.join_path(packagePath, case)
             fileops.make(casePath, FileType.DIRECTORY)
             package_case(case, casePath, cases, typeDetailsDict['naming'])
+            compress_case(case, casePath, compressionDict)
 
 def package(savePaths: list, configFilePath: str=None, layout: str=None):
     load_config_file(path=configFilePath)
@@ -95,4 +106,5 @@ def package(savePaths: list, configFilePath: str=None, layout: str=None):
             problemPath = fileops.join_path(path, problemDirName)
             fileops.make(problemPath, FileType.DIRECTORY)
             for packageTypeName, packageType in config[layout][TYPES_KEY].items():
-                package_type(problemPath, caseList, packageType)
+                package_type(problemPath, caseList, packageType, 
+                    config[layout][COMPRESSION_KEYWORD])
