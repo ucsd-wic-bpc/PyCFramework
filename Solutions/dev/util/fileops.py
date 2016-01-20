@@ -58,7 +58,7 @@ def remove(path, fileType):
 
     return True
 
-def parse_csv(path, delimiter=';', subdelimiter=','):
+def parse_csv(path, delimiter=','):
     """
     Return a list of data found in the csv file delineated by delimiter.
     If subdelimiter exists in a particular delineated field, that field is
@@ -68,13 +68,9 @@ def parse_csv(path, delimiter=';', subdelimiter=','):
     if not exists(path, FileType.FILE):
         return csvList
 
-    with open(path, 'r') as csvfile:
+    with open(path, 'r', newline='') as csvfile:
         csvReader = csv.reader(csvfile, delimiter=delimiter)
         for row in csvReader:
-            for i in range(0, len(row)):
-                if subdelimiter in row[i]:
-                    row[i] = row[i].split(subdelimiter)
-
             csvList.append(row)
 
     return csvList

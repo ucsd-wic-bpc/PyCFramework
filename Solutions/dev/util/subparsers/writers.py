@@ -34,7 +34,7 @@ def operate(args):
     """
     # Differentiate between writers command and additional args
     commandArg = args.command
-    if commandArg is None:
+    if commandArg is None or len(commandArg) == 0:
         # TODO: Switch to new output format
         print('Error: No command word was provided for writers module')
         return
@@ -276,8 +276,8 @@ def import_writers(csvFiles: list):
     Creates the writers specified by the provided CSV files. The CSV files 
     should follow the format:
 
-    <folder>;<name>;<email>;"<language1>,<language2>"
-    <folder>;<name>;<email>;"<language1>,<language2>"
+    <folder>,<name>,<email>,"<language1>,<language2>"
+    <folder>,<name>,<email>,"<language1>,<language2>"
 
     Arguments:
     csvFiles:list - The list of CSV file paths to import from
@@ -292,19 +292,20 @@ def _create_writer_from_list(datalist: list):
     """
     Private function. Creates a single writer from a list following format:
 
-    [folder,name,email,[language1,language2]]
+    ["folder","name","email","language1,language2"]
 
     Arguments:
     datalist:list - The list of data to load into the writer
     """
-    if datalist is None or not len(datalist) == 3 or not isinstance(datalist[2], list):
+    if datalist is None or not len(datalist) == 4:
         raise PyCException('Cannot create writer from datalist {}. Malformatted'
                 .format(str(datalist)))
 
     newWriter = Writer(writerPath = datalist[0], writerName = datalist[1],
             writerEmail = datalist[2])
     newWriter.create()
-    newWriter.add_known_language_from_list(datalist[3])
+    splitLanguageList = [languageName.strip() for languageName in datalist[3].split(',')]
+    newWriter.add_known_language_from_list(splitLanguageList)
 
 def assign_problems(writerNames: list, problemNumbers: list, languageNames: list):
     """
