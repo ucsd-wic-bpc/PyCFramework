@@ -55,7 +55,7 @@ def parse_arguments(arguments, output=sys.stdout):
 
 def main(arguments, out=sys.stdout):
     # Set the path
-    PathMapper.set_root_path(os.path.dirname(os.path.abspath(__name__)))_root_path(
+    PathMapper.set_root_path(os.path.dirname(os.path.abspath(__name__)))
 
     try:
         parsedArgs = parse_arguments(arguments, output=out)
