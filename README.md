@@ -76,16 +76,16 @@ The executable for this project is found in Solutions/dev/runner.py. This file
 should be the only file that is executed and should contain all the necessary
 functionality. The script is separated into three modes of functionality:
 
-	#### ./runner.py writers ####
-	Manages all the writers in the competition. This module allows you to
-	view,add,edit, or delete writers. 
+#### ./runner.py writers ####
+Manages all the writers in the competition. This module allows you to
+view,add,edit, or delete writers. 
 
-	#### ./runner.py test ####
-	Manages the testing of solutions written for the competition. 
+#### ./runner.py test ####
+Manages the testing of solutions written for the competition. 
 
-	#### ./runner.py package ####
-	Manages the packaging of cases for importation into a programming
-	competition platform.
+#### ./runner.py package ####
+Manages the packaging of cases for importation into a programming
+competition platform.
 
 More information about these can be viewed inside their respective sources
 (found in Solutions/dev/util/subparsers) or in the wiki.
@@ -98,19 +98,19 @@ This configuration is separated into three configuration files, all found
 within the conf/ folder. More information of configuration can be found in the
 [wiki](https://github.com/brandonio21/PyCFramework/wiki/Configuration).
 	
-	#### definitions.json ####
-	Contains information regarding how the competition in general is 
-	configured. This includes things like how to name the solution files,
-	how many problems there are, how many solution writers must get a 
-	solution correct before it is accepted, etc.
+#### definitions.json ####
+Contains information regarding how the competition in general is 
+configured. This includes things like how to name the solution files,
+how many problems there are, how many solution writers must get a 
+solution correct before it is accepted, etc.
 
-	#### languages.json ####
-	Contains information about the allowed languages during the competition.
+#### languages.json ####
+Contains information about the allowed languages during the competition.
 
-	#### packages.json ####
-	Contains information about how to package case files for uploading to
-	a programming competition framework such as HackerRank.
+#### packages.json ####
+Contains information about how to package case files for uploading to
+a programming competition framework such as HackerRank.
 
-	#### variables.json ####
-	Contains a list of variables that can be used in other configuration 
-	files. This file is not to be edited.
+#### variables.json ####
+Contains a list of variables that can be used in other configuration 
+files. This file is not to be edited.
