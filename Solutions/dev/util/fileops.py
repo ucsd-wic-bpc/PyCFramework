@@ -10,6 +10,7 @@ import json
 import shutil
 import csv
 import zipfile
+import tarfile
 
 def exists(path, fileType):
     """
@@ -115,6 +116,11 @@ def zipdir(directory, zipfilePath):
         for file in files:
             zipf.write(os.path.join(root,file))
 
+def tardir(directory, tarfilePath):
+    with tarfile.open(tarfilePath, "w:gz") as tar:
+        for root, dirs, files in os.walk(directory):
+            for file in files:
+                tar.add(os.path.join(root,file))
 
 def join_path(path, *parts):
     """

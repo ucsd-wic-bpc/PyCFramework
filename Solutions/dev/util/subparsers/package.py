@@ -105,13 +105,38 @@ def package_case(caseName: str, caseDir: str, cases: list, namingScheme:str):
         fileops.write_file(outputFilePath, case.outputContents)
 
 def compress_case(caseName: str, casePath: str, compressionDict: dict):
+    """
+    Compresses a specific case using the compression method specified in the
+    configuration file.
+
+    Arguments:
+    caseName: str - The name of the case to compress
+    casePath: str - The path of the case to compress
+    compressionDict: dict - The dictionary corresponding to the compression
+                            settings from the config file
+    """
+    # If there are no compression settings, dont compress
     if compressionDict is None: return
 
     if compressionDict['enabled']:
         if compressionDict['method'] == 'zip':
             fileops.zipdir(casePath, '{}.zip'.format(casePath))
+        elif compressionDict['method'] == 'targz':
+            fileops.tardir(casePath, '{}.tar.gz'.format(casePath))
 
 def package_type(packagePath: str, cases: list, packageType: dict, compressionDict: dict):
+    """
+    Packages a specific case type by first making the directory that it belongs
+    in, then packaging its cases, then compressing its cases
+
+    Arguments:
+    packagePath: str - The path that the user wants the package to go
+    cases: list      - The list of cases that need to be package
+    packageType: dict- The configuration file dictionary of package types that
+                       need to be made
+    compressionDict: dict - The dictionary corresponding to the compression
+                            settings from the config file
+    """
     for case in packageType['cases']:
         casePath = fileops.join_path(packagePath, case)
         fileops.make(casePath, FileType.DIRECTORY)
@@ -119,23 +144,51 @@ def package_type(packagePath: str, cases: list, packageType: dict, compressionDi
         compress_case(case, casePath, compressionDict)
 
 def _get_compression_from_layout_dict(layoutDict: dict):
+    """
+    Instead of throwing a key not found exception, simply return null
+    if the compression key is not found in the layout declaration
+
+    Arguments:
+    layoutDict: dict - The layout declaration as specified by the user
+                       provided config file
+    """
     if COMPRESSION_KEYWORD in layoutDict:
         return layoutDict[COMPRESSION_KEYWORD]
     else:
         return None
 
 def package_into_path(path: str, layoutDict: dict):
+    """
+    Follows the users provided configuration file to package all cases into
+    the provided path. Delegates most functionality to other functions.
+
+    Arguments:
+    path: str - The path to package into
+    layoutDict: dict - The dict provided by the user's configuration
+    """
+    # Look through all cases...
     for problemNumber, caseList in case.get_all_cases().items():
+        # Make the directories for the problem numbers
         problemDirName = Definitions.get_value('solution_naming').format(
                 **dict(problem=problemNumber))
         problemPath = fileops.join_path(path, problemDirName)
         fileops.make(problemPath, FileType.DIRECTORY)
 
+        # Go through each type in the config file and package it
         for packageTypeName, packageType in layoutDict[TYPES_KEY].items():
             package_type(problemPath, caseList, packageType, 
                 _get_compression_from_layout_dict(layoutDict))
 
 def package(savePaths: list, configFilePath: str=None, layout: str=None):
+    """
+    The parent function that handles the package subparser call. Loads the
+    configuration file and packages into the provided paths
+
+    Arguments:
+    savePaths: list - A list of paths to package into
+    configFilePath: str - The Alternate configuration file specified by the user
+    layout: str - The specific package layout to load
+    """
     load_config_file(path=configFilePath)
     global config
 
