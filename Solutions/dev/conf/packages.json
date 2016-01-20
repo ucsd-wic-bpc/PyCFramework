@@ -1,0 +1,18 @@
+{
+	"hackerrank" : {
+		"types" : {
+			"corner" : {
+				"cases"  : ["corner", "sample"],
+				"naming" : "{input_output}_{caseType}_{number}.txt"
+			},
+			"general" : {
+				"cases"  : ["general", "sample"],
+				"naming" : "{input_output}_{caseType}_{number}.txt"
+			}
+		},
+		"compression" : {
+			"enabled" : true,
+			"method"  : "zip"
+		}
+	}
+}
