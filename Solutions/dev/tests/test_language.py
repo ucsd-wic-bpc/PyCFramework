@@ -10,6 +10,7 @@ from util.language import Language, Languages
 from unittest import mock
 from util.pathmapper import PathMapper
 import os
+from nose.plugins.deprecated import DeprecatedTest
 
 class TestLanguage(unittest.TestCase):
 
@@ -74,6 +75,7 @@ class TestLanguages(unittest.TestCase):
         """
         Ensure Languages.load_languages properly delegates to Language's load from dict
         """
+        raise DeprecatedTest
         mocked_language_fileops.get_json_dict.return_value = {
                                                             'languages' : [
                                                                         { 'block' : 1 },

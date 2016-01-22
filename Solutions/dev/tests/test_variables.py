@@ -9,6 +9,7 @@ import unittest
 from unittest import mock
 from util.variables import Variables
 from util.pathmapper import PathMapper
+from nose.plugins.deprecated import DeprecatedTest
 
 class TestVariables(unittest.TestCase):
 
@@ -28,6 +29,7 @@ class TestVariables(unittest.TestCase):
         """
         Ensure Variables.load_variables delegates to fileops properly
         """
+        raise DeprecatedTest
         mocked_variables_fileops.get_json_dict.return_value = {'hello' : 'hi'}
         mocked_variables_get_variables_filepath.return_value = 'tshirt'
         Variables.load_variables()
