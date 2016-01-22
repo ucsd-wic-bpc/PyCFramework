@@ -10,6 +10,7 @@ import util.fileops
 from util.fileops import FileType
 import unittest
 import os
+from nose.plugins.deprecated import DeprecatedTest
 
 
 class TestFileOps(unittest.TestCase):
@@ -117,6 +118,7 @@ class TestFileOps(unittest.TestCase):
     @unittest.mock.patch('util.fileops.os.path')
     @unittest.mock.patch('util.fileops.os')
     def test_get_files_in_dir_nonrecursive(self, mocked_fileops_os, mocked_fileops_os_path):
+        raise DeprecatedTest
         """
         Ensure a nonrecursive fileops.get_files_in_dir returns only the files in the parent dir
         """
@@ -131,6 +133,7 @@ class TestFileOps(unittest.TestCase):
     @unittest.mock.patch('util.fileops.os.path')
     @unittest.mock.patch('util.fileops.os')
     def test_get_files_in_dir_recursive(self, mocked_fileops_os, mocked_fileops_os_path):
+        raise DeprecatedTest
         """
         Ensure a recursive fileops.get_files_in_dir returns files in top dir and children dirs
         """
