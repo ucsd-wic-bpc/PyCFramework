@@ -15,8 +15,9 @@ from util.definitions import Definitions
 from random import shuffle
 from collections import deque
 
+from util.subparsers.subparsers import writerslist as writersListSubparser
+
 SUBPARSER_KEYWORD = 'writers'
-LIST_COMMAND   = 'list'
 TODO_COMMAND   = 'todo'
 ADD_COMMAND    = 'add'
 EDIT_COMMAND   = 'edit'
@@ -42,9 +43,7 @@ def operate(args):
     commandPositionals = commandArg[1:]
     command = commandArg[0]
 
-    if command == LIST_COMMAND:
-        list_writers(commandPositionals, args)
-    elif command == TODO_COMMAND:
+    if command == TODO_COMMAND:
         display_todo_for_writer(commandPositionals, args)
     elif command == ADD_COMMAND:
         add_writer(commandPositionals, args)
@@ -74,26 +73,9 @@ def add_to_subparser_object(subparserObject, parentParser):
     writerParser = subparserObject.add_parser(SUBPARSER_KEYWORD, parents=[parentParser])
     writerParser.add_argument('command', nargs='*')
     writerParser.set_defaults(func=operate)
+    subparsers = writerParser.add_subparsers()
+    writersListSubparser.add_to_subparser_object(subparsers, parentParser)
 
-def list_writers(writers: list, args):
-    """
-    Prints the list of writers and their details to the console. Details are
-    retrieved using Writer.__str__(). 
-
-    Arguments:
-    writers: list   - The list of writer names to print. If empty, print all.
-    args: Namesapce - Any additional arguments that may be used for global flags
-    """
-    writerDetailsList = []
-
-    if not writers is None and len(writers) > 0:
-        writerDetailsList = [str(writer) for writer in 
-                _form_writer_list_from_names(writers)]
-    else:
-        writerDetailsList = [str(writer) for writer in Writers.get_all_writers()]
-
-    # TODO: Change this print statement to the new output format
-    print('\n'.join(writerDetailsList))
 
 def _form_writer_list_from_names(writerNames:list, skipInvalidWriters=False):
     """

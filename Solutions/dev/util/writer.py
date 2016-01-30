@@ -72,6 +72,13 @@ class Writer:
     def knows_language(self, languageName):
         return languageName in self.knownLanguages
 
+    def knows_languages(self, languageNames: list):
+        for languageName in languageNames:
+            if not self.knows_language(languageName):
+                return False
+
+        return True
+
     def add_assigned_problem(self, problemNumber, languageName):
         self._add_assigned_problem( problemNumber, languageName)
         self._write_datafile()
@@ -250,6 +257,16 @@ class Writers:
     """
     Handle the .writers.json config file
     """
+    # filter keys
+    FILTER_KEY_DIRS               = 'directories'
+    FILTER_KEY_COMPLETED_PROBLEMS = 'completedProblems'
+    FILTER_KEY_TODO_PROBLEMS      = 'todoProblems'
+    FILTER_KEY_EMAILS             = 'emails'
+    FILTER_KEY_KNOWS_LANGS        = 'knowsLanguages'
+    FILTER_KEY_TODO_LANGS         = 'todoInLanguages'
+    FILTER_KEY_FIRST_NAMES        = 'firstNames'
+    FILTER_KEY_FULL_NAMES         = 'fullNames'
+
     JSON_FILE = '.writers.json'
     writers = None
 
@@ -320,3 +337,73 @@ class Writers:
             cls._load_from_config()
 
         return writerName in cls.writers
+
+    @classmethod
+    def get_writers_from_filter(cls, writerFilter:dict={}):
+        """
+        A wrapper which removes all keys where the value is an empty list
+        """
+        for key,value in dict(writerFilter).items():
+            if len(value) == 0:
+                writerFilter.pop(key, None)
+
+        return cls._get_writers_from_filter(writerFilter)
+
+    @classmethod
+    def _get_writers_from_filter(cls, writerFilter:dict={}):
+        """
+        the writerFilter has the following keys available:
+        {
+            "directories" : [str],
+            "completedProblems" : [int],
+            "todoProblems" : [int],
+            "emails" : [str],
+            "knowsLanguages" : [str],
+            "todoInLanguages" : [str],
+            "firstNames" : [str],
+            "fullNames" : [str]
+        }
+        """
+        writerSet = set()
+        if not cls.FILTER_KEY_DIRS in writerFilter:
+            if not cls.FILTER_KEY_FIRST_NAMES in writerFilter:
+                writerSet = writerSet.union(set(Writers.get_all_writers()))
+            else:
+                writerSet = writerSet.union(set([Writer.load_from_folder(fold) for fold in
+                                     writerFilter[cls.FILTER_KEY_FIRST_NAMES]]))
+        else:
+            writerSet = writerSet.union(set([Writer.load_from_path(specifiedPath) for
+                                 specifiedPath in writerFilter[cls.FILTER_KEY_DIRS]]))
+            if cls.FILTER_KEY_FIRST_NAMES in writerFilter:
+                writerSet = writerSet.union(set([Writer.load_from_folder(fold) for fold in
+                                     writerFilter[cls.FILTER_KEY_FIRST_NAMES]]))
+
+        writerList = list(writerSet)
+        if cls.FILTER_KEY_COMPLETED_PROBLEMS in writerFilter:
+            writerList = [writer for writer in writerList if
+                          set(writerFilter[cls.FILTER_KEY_COMPLETED_PROBLEMS]).issubset(
+                              writer._solutions)]
+
+        if cls.FILTER_KEY_TODO_PROBLEMS in writerFilter:
+            writerList = [writer for writer in writerList if 
+                    set(writerFilter[FILTER_KEY_TODO_PROBLEMS]).issubset(
+                        [item[0] for item in writer.get_assigned_problems_not_started()])]
+                
+        if FILTER_KEY_EMAILS in writerFilter:
+            writerList = [writer for writer in writerList if writer.email in 
+                          writerFilter[FILTER_KEY_EMAILS]]
+
+        if FILTER_KEY_KNOWS_LANGS in writerFilter:
+            writerList = [writer for writer in writerList if 
+                          writer.knows_languages(writerFilter[FILTER_KEY_KNOWS_LANGS])]
+
+        if FILTER_KEY_TODO_LANGS in writerFilter:
+            writerList = [writer for writer in writerList if 
+                          set(writerFilter[FILTER_KEY_TODO_LANGS]).issubset(
+                              [item[1] for item in writer.get_assigned_problems_not_started()])]
+
+        if FILTER_KEY_FULL_NAMES in writerFilter:
+            writerList = [writer for writer in writerList if writer.name
+                          in writerFilter[FILTER_KEY_FULL_NAMES]]
+
+        return writerList
