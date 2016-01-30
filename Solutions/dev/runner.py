@@ -21,9 +21,9 @@ def parse_arguments(arguments, output=sys.stdout):
     argParser = PCArgParseFactory.get_argument_parser(output)
     # Create a base parser to handle all the generic flags
     baseParser = argparse.ArgumentParser(add_help=False)
-    baseParser.add_argument('--writer', help='The writer to operate on')
-    baseParser.add_argument('--name', help='The name of the writer being operated on')
-    baseParser.add_argument('--email', help='The email of the writer being operated on')
+    baseParser.add_argument('--writer', nargs='+', help='The writer to operate on')
+    baseParser.add_argument('--name', nargs='+', help='The name of the writer being operated on')
+    baseParser.add_argument('--email', nargs='+', help='The email of the writer being operated on')
     baseParser.add_argument('--language', nargs='+', help='The name of the language being operated on')
     baseParser.add_argument('--problems', nargs='+', help='The number of the problem to operate on')
     baseParser.add_argument('--verbose', action='store_true', help='Display verbose output')

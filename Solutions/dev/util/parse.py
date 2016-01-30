@@ -5,6 +5,7 @@
 #
 # Contains utilities for parsing things
 ################################################################################
+from util.definitions import Definitions
 
 class NumberParse:
     def __init__(self, lessThanSymbol: str='-', greaterThanSymbol: str='+',
@@ -13,7 +14,13 @@ class NumberParse:
         self._greaterThanSymbol = greaterThanSymbol
         self._toSymbol = rangeSymbol
 
-    def str_to_list_range(self, string, uBound, lBound):
+    def str_to_list_range(self, string):
+        lowerBound = 1
+        upperBound = Definitions.get_value('problem_count')
+        return self.str_to_list_range_with_bounds(string, upperBound, 
+                                                  lowerBound)
+
+    def str_to_list_range_with_bounds(self, string, uBound, lBound):
         if not self._lessThanSymbol in string and not self._greaterThanSymbol in string:
             return [int(string)]
 
