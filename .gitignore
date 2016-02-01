@@ -2,3 +2,9 @@
 *pycache*
 *.coverage
 *.noseids
+Solutions/dev/*/
+Solutions/dev/.writers.json
+Solutions/FinalIO/
+!Solutions/dev/conf/
+!Solutions/dev/util/
+!Solutions/dev/tests/

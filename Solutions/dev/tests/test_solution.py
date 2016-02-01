@@ -11,6 +11,7 @@ from util.solution import Solution
 from util.definitions import Definitions
 from util.variables import Variables
 from util.language import Languages
+from nose.plugins.deprecated import DeprecatedTest
 
 class TestSolution(unittest.TestCase):
 
@@ -58,6 +59,7 @@ class TestSolution(unittest.TestCase):
         """
         Ensure Solution.load_from_path calls necessary functions and returns
         """
+        raise DeprecatedTest
         mocked_solution_fileops.get_basename_less_extension.return_value = 'filename'
         mockedValMatcher = mock.MagicMock()
         mockedValMatcher.get_variable_value.return_value = 'lol'
