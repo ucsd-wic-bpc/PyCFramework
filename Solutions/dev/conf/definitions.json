@@ -12,5 +12,5 @@
 	 "solution_naming"          : "Problem{problem}",
 	 "output_naming"            : "problem{problem}_{caseType}_{language}",
 	 "problem_count"            : 15,
-         "complete_threshold"       : 3
+         "complete_threshold"       : 2
 }
