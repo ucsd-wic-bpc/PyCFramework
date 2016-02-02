@@ -21,8 +21,11 @@ def operate(args):
     """
     # Parse the problem numbers from the commandline
     problemParser = NumberParse()
-    specifiedProblems = list(set([problemParser.str_to_list_range(problemSet)
+    if not args.problems is None:
+        specifiedProblems = list(set([problemParser.str_to_list_range(problemSet)
                                   for problemSet in args.problems]))
+    else:
+        specifiedProblems = None
 
 
     list_writers(args.writer_directories, specifiedProblems, args.email,
