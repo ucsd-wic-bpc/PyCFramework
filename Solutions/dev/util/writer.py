@@ -344,7 +344,7 @@ class Writers:
         A wrapper which removes all keys where the value is an empty list
         """
         for key,value in dict(writerFilter).items():
-            if len(value) == 0:
+            if value is None or ( isinstance(value, list) and len(value) == 0):
                 writerFilter.pop(key, None)
 
         return cls._get_writers_from_filter(writerFilter)
@@ -389,21 +389,21 @@ class Writers:
                     set(writerFilter[FILTER_KEY_TODO_PROBLEMS]).issubset(
                         [item[0] for item in writer.get_assigned_problems_not_started()])]
                 
-        if FILTER_KEY_EMAILS in writerFilter:
+        if cls.FILTER_KEY_EMAILS in writerFilter:
             writerList = [writer for writer in writerList if writer.email in 
-                          writerFilter[FILTER_KEY_EMAILS]]
+                          writerFilter[cls.FILTER_KEY_EMAILS]]
 
-        if FILTER_KEY_KNOWS_LANGS in writerFilter:
+        if cls.FILTER_KEY_KNOWS_LANGS in writerFilter:
             writerList = [writer for writer in writerList if 
-                          writer.knows_languages(writerFilter[FILTER_KEY_KNOWS_LANGS])]
+                          writer.knows_languages(writerFilter[cls.FILTER_KEY_KNOWS_LANGS])]
 
-        if FILTER_KEY_TODO_LANGS in writerFilter:
+        if cls.FILTER_KEY_TODO_LANGS in writerFilter:
             writerList = [writer for writer in writerList if 
-                          set(writerFilter[FILTER_KEY_TODO_LANGS]).issubset(
+                          set(writerFilter[cls.FILTER_KEY_TODO_LANGS]).issubset(
                               [item[1] for item in writer.get_assigned_problems_not_started()])]
 
-        if FILTER_KEY_FULL_NAMES in writerFilter:
+        if cls.FILTER_KEY_FULL_NAMES in writerFilter:
             writerList = [writer for writer in writerList if writer.name
-                          in writerFilter[FILTER_KEY_FULL_NAMES]]
+                          in writerFilter[cls.FILTER_KEY_FULL_NAMES]]
 
         return writerList
