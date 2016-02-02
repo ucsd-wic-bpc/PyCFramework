@@ -69,7 +69,7 @@ def add_to_subparser_object(subparserObject, parentParser):
                       useful for global flags
     """
     writerParser = subparserObject.add_parser(SUBPARSER_KEYWORD, parents=[parentParser])
-    writerParser.add_argument('command', nargs='*')
+    #writerParser.add_argument('command', nargs='*')
     writerParser.set_defaults(func=operate)
     subparsers = writerParser.add_subparsers()
     writersListSubparser.add_to_subparser_object(subparsers, parentParser)
