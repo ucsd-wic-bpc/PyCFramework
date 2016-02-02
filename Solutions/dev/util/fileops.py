@@ -100,6 +100,12 @@ def write_file(path, contents):
     with open(path, 'w+') as openFile:
         openFile.write(contents)
 
+def read_file(path):
+    contents = ""
+    with open(path, 'r') as openFile:
+        contents = openFile.read()
+    return contents
+
 def get_json_string(jsonData):
     """
     Returns a decoded json data chunk

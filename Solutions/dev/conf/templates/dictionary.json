@@ -1,0 +1,7 @@
+{
+	"Java" : {
+		"bool" : "Boolean",
+		"str"  : "String",
+		"int"  : "int"
+	}
+}

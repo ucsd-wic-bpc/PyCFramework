@@ -37,6 +37,12 @@ class Language:
         self._runCommand = runCommand
         self._runArguments = runArguments
 
+    def get_extension(self):
+        if not self._compileExtension is None:
+            return self._compileExtension
+        else:
+            return self._runExtension
+
     @classmethod
     def load_from_dict(cls, languageBlockDict: dict):
         """
