@@ -382,7 +382,7 @@ class Writers:
         if cls.FILTER_KEY_COMPLETED_PROBLEMS in writerFilter:
             writerList = [writer for writer in writerList if
                           set(writerFilter[cls.FILTER_KEY_COMPLETED_PROBLEMS]).issubset(
-                              writer._solutions)]
+                              writer._solutions.keys())]
 
         if cls.FILTER_KEY_TODO_PROBLEMS in writerFilter:
             writerList = [writer for writer in writerList if 

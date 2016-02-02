@@ -22,8 +22,11 @@ def operate(args):
     # Parse the problem numbers from the commandline
     problemParser = NumberParse()
     if not args.problems is None:
-        specifiedProblems = list(set([problemParser.str_to_list_range(problemSet)
-                                  for problemSet in args.problems]))
+        problemRange = []
+        for problemSet in args.problems:
+            problemRange.extend(problemParser.str_to_list_range(problemSet))
+
+        specifiedProblems = list(set(problemRange))
     else:
         specifiedProblems = None
 
