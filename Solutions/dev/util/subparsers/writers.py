@@ -16,9 +16,9 @@ from random import shuffle
 from collections import deque
 
 from util.subparsers.subparsers import writerslist as writersListSubparser
+from util.subparsers.subparsers import writerstodo as writersTodoSubparser
 
 SUBPARSER_KEYWORD = 'writers'
-TODO_COMMAND   = 'todo'
 ADD_COMMAND    = 'add'
 EDIT_COMMAND   = 'edit'
 DELETE_COMMAND = 'delete'
@@ -43,9 +43,7 @@ def operate(args):
     commandPositionals = commandArg[1:]
     command = commandArg[0]
 
-    if command == TODO_COMMAND:
-        display_todo_for_writer(commandPositionals, args)
-    elif command == ADD_COMMAND:
+    if command == ADD_COMMAND:
         add_writer(commandPositionals, args)
     elif command == DELETE_COMMAND:
         delete_writer(commandPositionals, args)
@@ -75,6 +73,7 @@ def add_to_subparser_object(subparserObject, parentParser):
     writerParser.set_defaults(func=operate)
     subparsers = writerParser.add_subparsers()
     writersListSubparser.add_to_subparser_object(subparsers, parentParser)
+    writersTodoSubparser.add_to_subparser_object(subparsers, parentParser)
 
 
 def _form_writer_list_from_names(writerNames:list, skipInvalidWriters=False):
