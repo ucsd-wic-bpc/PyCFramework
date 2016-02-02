@@ -14,6 +14,13 @@ class NumberParse:
         self._greaterThanSymbol = greaterThanSymbol
         self._toSymbol = rangeSymbol
 
+    def str_list_to_uniq_range(self, stringList: list):
+        problemRange = []
+        for problemSet in stringList:
+            problemRange.extend(self.str_to_list_range(problemSet))
+
+        return list(set(problemRange))
+
     def str_to_list_range(self, string):
         lowerBound = 1
         upperBound = Definitions.get_value('problem_count')

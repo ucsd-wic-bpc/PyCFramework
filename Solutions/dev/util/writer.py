@@ -31,7 +31,7 @@ class Writer:
         for solution in self.get_all_solutions():
             solutionsString += '{}\n'.format(str(solution))
 
-        return 'Directory: {}\nName: {}\nEmail: {}\nKnown Languages: {}\nAssigned Problems:{}\nSolutions: \n{}\n'.format(
+        return 'Directory: {}\nName: {}\nEmail: {}\nKnown Languages: {}\nAssigned Problems:{}\nSolutions: \n{}'.format(
                 self._path, self.name, self.email, ', '.join(list(self.knownLanguages.keys())),
                 ', '.join(['{} in {}'.format(item[0], item[1]) for item in sorted(self.assignedProblems)]),
                 solutionsString)
@@ -386,7 +386,7 @@ class Writers:
 
         if cls.FILTER_KEY_TODO_PROBLEMS in writerFilter:
             writerList = [writer for writer in writerList if 
-                    set(writerFilter[FILTER_KEY_TODO_PROBLEMS]).issubset(
+                    set(writerFilter[cls.FILTER_KEY_TODO_PROBLEMS]).issubset(
                         [item[0] for item in writer.get_assigned_problems_not_started()])]
                 
         if cls.FILTER_KEY_EMAILS in writerFilter:
