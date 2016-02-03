@@ -51,7 +51,7 @@ def add_to_subparser_object(subparserObject, parentParser):
     """
     templateParser = subparserObject.add_parser(SUBPARSER_KEYWORD, 
                                                 parents=[parentParser])
-    defaultTemplateLoc = PathMapper.get_mapped_path('../Templates/Generated')
+    defaultTemplateLoc = PathMapper.get_mapped_path_from_parent('Templates','Generated')
     templateParser.add_argument('case_files', nargs='*')
     templateParser.add_argument('--output', default=defaultTemplateLoc)
     templateParser.set_defaults(func=operate)
@@ -66,10 +66,10 @@ def generate_templates_from_case_files(caseFilePaths:list, languages: list,
         caseList = case.get_cases_from_json_file(path)
         if languages is None or len(languages) == 0:
             languages = Languages.get_all_language_names()
-        generate_template_for_case_collection(caseList, languages)
+        generate_template_for_case_collection(caseList, languages, outputPath)
 
-def generate_template_for_case_collection(cases: list, languages: list):
-    for (templatePath, templateLanguage) in generate_blank_template_files_for_case_collection(cases, languages):
+def generate_template_for_case_collection(cases: list, languages: list, outputPath: str):
+    for (templatePath, templateLanguage) in generate_blank_template_files_for_case_collection(cases, languages, outputPath):
         fill_template_file_for_case_collection(templatePath, templateLanguage,
                 cases)
 
@@ -89,7 +89,7 @@ def generate_blank_template_files_for_case_collection(cases:list, languages:list
     so that they may be written to.
     """
     if cases is None or len(cases) == 0:
-        yield []
+        return []
     else:
         templateFile = Definitions.get_value('solution_naming').format(
                 **{'problem':cases[0].problemNumber})
@@ -98,12 +98,12 @@ def generate_blank_template_files_for_case_collection(cases:list, languages:list
 
         for languageName in languages:
             languageObj = Languages.get_language_by_name(languageName)
-            path = templateFilePath.format(languageObj.get_extension)
+            path = templateFilePath.format(languageObj.get_extension())
             fileops.make(path, FileType.FILE)
             yield (path, languageObj)
 
 def fill_template_file_for_case_collection(path: str, language, cases: list):
-    formattedTemplate = get_unformatted_template().format(**{
+    formattedTemplate = get_unformatted_template(language).format(**{
         'problem' : cases[0].problemNumber,
         'returnType' : type(json.loads(cases[0].outputContents.lower())).__name__,
         'methodName' : "balalkjfslkafj",
@@ -111,4 +111,4 @@ def fill_template_file_for_case_collection(path: str, language, cases: list):
         'defaultReturn' : 0,
         })
 
-    fileops.write(path, formattedTemplate)
+    fileops.write_file(path, formattedTemplate)
