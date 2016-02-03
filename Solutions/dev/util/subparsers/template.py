@@ -24,7 +24,7 @@ from util.definitions import Definitions
 from util.language import Languages
 
 SUBPARSER_KEYWORD = 'template'
-
+templateDictionary = None
 
 def operate(args):
     """
@@ -36,7 +36,6 @@ def operate(args):
     """
     generate_templates_from_case_files(args.case_files, args.language, 
             args.output)
-
 
 def add_to_subparser_object(subparserObject, parentParser):
     """
@@ -102,10 +101,22 @@ def generate_blank_template_files_for_case_collection(cases:list, languages:list
             fileops.make(path, FileType.FILE)
             yield (path, languageObj)
 
+def get_language_specific_type(language, typeStr: str):
+    global templateDictionary
+    if templateDictionary is None:
+        dictionaryConfigPath = PathMapper.get_mapped_config_path('templates','dictionary.json')
+        templateDictionary = fileops.get_json_dict(dictionaryConfigPath)
+
+    return templateDictionary[language.name][typeStr]
+
+def output_type_to_proper_str(outputStr: str):
+    return type(json.loads(outputStr.lower())).__name__
+
 def fill_template_file_for_case_collection(path: str, language, cases: list):
     formattedTemplate = get_unformatted_template(language).format(**{
         'problem' : cases[0].problemNumber,
-        'returnType' : type(json.loads(cases[0].outputContents.lower())).__name__,
+        'returnType' : get_language_specific_type(language, 
+                       output_type_to_proper_str(cases[0].outputContents)),
         'methodName' : "balalkjfslkafj",
         'argList' : "int poop",
         'defaultReturn' : 0,
