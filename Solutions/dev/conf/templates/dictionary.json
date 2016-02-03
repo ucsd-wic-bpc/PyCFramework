@@ -1,6 +1,6 @@
 {
 	"Java" : {
-		"bool" : "Boolean",
+		"bool" : "boolean",
 		"str"  : "String",
 		"int"  : "int"
 	}
