@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/brandonio21/PyCFramework.png?label=ready&title=Ready)](https://waffle.io/brandonio21/PyCFramework)
 PyCFramework
 ============
 PyCFramework is a framework for managing programming competitions writter in
