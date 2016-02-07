@@ -14,6 +14,8 @@ from util.case import KnownCase
 SUBPARSER_KEYWORD = "test"
 SHOW_PASSING_KEYWORD = "showpass"
 
+headerPrinted = False
+
 def operate(args):
     """
     Takes the passed in args and delegates to the proper functionality. This is
@@ -139,6 +141,7 @@ def _test_solution_against_cases(solution, cases:list, outputToStderr: bool,
     try:
         solution.compile(verbose=outputToStderr)
     except ExecutionError as e:
+        _print_header_if_not_printed()
         print(formattingStr.format(solution.solutionWriter, solution.problemNumber, solution.solutionLanguage.name, "COMPILE",
             "COMPILE", 'FAIL', 'Compile Error'))
         return
@@ -148,6 +151,7 @@ def _test_solution_against_cases(solution, cases:list, outputToStderr: bool,
             solutionOutput = solution.get_output(case.inputContents,
                     outputToStderr=outputToStderr)
         except ExecutionError as e:
+            _print_header_if_not_printed()
             print(formattingStr.format(solution.solutionWriter,
                 solution.problemNumber, solution.solutionLanguage.name, 
                 case.get_case_string(), case.caseNumber, 'FAIL',
@@ -161,6 +165,7 @@ def _test_solution_against_cases(solution, cases:list, outputToStderr: bool,
         commentStr = "Correct Solution" if resultsStr == "PASS" else "Incorrect Solution"
         if resultsStr == "PASS" and not printPassingCases:
             continue
+        _print_header_if_not_printed()
         print(formattingStr.format(solution.solutionWriter,
             solution.problemNumber, solution.solutionLanguage.name,
             case.get_case_string(), case.caseNumber, resultsStr, commentStr))
@@ -183,10 +188,16 @@ def test(writerNames: list, languageNames: list, problemStrings: list,
     # load all the cases
     cases = CaseManager.get_all_cases()
 
-    formattingStr = "{0: <10}\t{1: <10}\t{2: <10}\t{3: <10}\t{4: <10}\t{5: <10}\t{6}"
-    print(formattingStr.format("Writer", "Problem", "Language", "CaseType", "Case", "Status", "Message"))
 
     # Now test all of the solutions
     for solution in solutionsToTest:
         _test_solution_against_cases(solution, cases[int(solution.problemNumber)],
                 outputToStderr, printPassingCases)
+
+def _print_header_if_not_printed():
+    global headerPrinted
+    if not headerPrinted:
+        formattingStr = "{0: <10}\t{1: <10}\t{2: <10}\t{3: <10}\t{4: <10}\t{5: <10}\t{6}"
+        print(formattingStr.format("Writer", "Problem", "Language", "CaseType", "Case", "Status", "Message"))
+        headerPrinted = True
+
