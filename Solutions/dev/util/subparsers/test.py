@@ -177,7 +177,6 @@ def _test_solution_against_cases(solution, cases:list, outputToStderr: bool,
             if outputToStderr:
                 print(">Passed")
             continue
-
         if outputToStderr:
             print("User Output: {}".format(solutionOutput))
             print("Correct Output: {}".format(case.outputContents))
