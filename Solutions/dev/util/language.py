@@ -145,11 +145,14 @@ class AppliedLanguage(Language):
         try:
             encodedInput = inputContents.encode('utf-8')
             output = subprocess.check_output(runCommand, input=encodedInput, 
-                stderr = (open(os.devnull, 'w') if not verbose else sys.stderr)).decode('utf-8')
+                stderr = (open(os.devnull, 'w') if not verbose else sys.stderr),
+                timeout=20).decode('utf-8')
             if not output is None:
                 output = output.replace('\r','')
         except subprocess.CalledProcessError as e:
-            raise ExecutionError('Error: Runtime Error\n{}'.format(e.output))
+            raise ExecutionError('Runtime Error')
+        except subprocess.TimeoutExpired as e:
+            raise ExecutionError('Timeout Expired')
 
         return output[:-1]
 

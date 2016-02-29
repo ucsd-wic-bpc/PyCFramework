@@ -165,7 +165,7 @@ def _test_solution_against_cases(solution, cases:list, outputToStderr: bool,
             print(formattingStr.format(solution.solutionWriter,
                 solution.problemNumber, solution.solutionLanguage.name, 
                 case.get_case_string(), case.caseNumber, 'FAIL',
-                'Runtime Error'))
+                e.message))
             continue
 
         if not isinstance(case, KnownCase):
