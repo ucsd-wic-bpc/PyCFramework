@@ -124,9 +124,13 @@ class AppliedLanguage(Language):
 
         compileCommand = [self._compileCommand]
         compileCommand.extend(self._compileArguments)
-        if not subprocess.call(compileCommand, stderr = (open(os.devnull, 'w')
-            if not verbose else sys.stderr)) == 0:
-            raise ExecutionError('Failed to compile')
+        try:
+            if not subprocess.call(compileCommand, stderr = (open(os.devnull, 'w')
+                if not verbose else sys.stderr)) == 0:
+                raise ExecutionError('Failed to compile')
+        except Exception:
+            raise ExecutionError('Could not run command {}'.format(
+                compileCommand[0])) from None
 
         return fileops.get_path_with_changed_extension(self._path, 
                 self._runExtension)
@@ -153,6 +157,9 @@ class AppliedLanguage(Language):
             raise ExecutionError('Runtime Error')
         except subprocess.TimeoutExpired as e:
             raise ExecutionError('Timeout Expired')
+        except Exception:
+            raise ExecutionError('Could not run command {}'.format(
+                runCommand[0])) from None
 
         return output[:-1]
 
