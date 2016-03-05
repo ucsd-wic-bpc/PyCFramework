@@ -59,7 +59,7 @@ def load_config_file(path=None):
     global config
     config = fileops.get_json_dict(path)
 
-def _generate_case_naming_dict(ioType: str, caseName: str, caseNumber: int):
+def _generate_case_naming_dict(ioType: str, caseName: str, caseNumber: int, incrementor: int):
     """
     Generates a small file naming dictionary to replace naming variables that
     might be found in the namingScheme configuration.
@@ -75,9 +75,9 @@ def _generate_case_naming_dict(ioType: str, caseName: str, caseNumber: int):
     if not ioType == 'input' and not ioType == 'output':
         raise Exception('Code Error: ioType is {}. Valid values are "input" or "output"'.format(ioType))
 
-    return { 'input_output' : ioType, 'caseType' : caseName, 'number' : caseNumber }
+    return { 'input_output' : ioType, 'caseType' : caseName, 'number' : caseNumber , 'inc' : incrementor}
 
-def package_case(caseName: str, caseDir: str, cases: list, namingScheme:str):
+def package_case(caseName: str, caseDir: str, cases: list, namingScheme:str, incrementor: int):
     """
     Packages a specific case type into the given directory, splitting input
     and output into their own directories.
@@ -95,14 +95,17 @@ def package_case(caseName: str, caseDir: str, cases: list, namingScheme:str):
     fileops.make(outputPath, FileType.DIRECTORY)
 
     for case in [c for c in cases if c.get_case_string() == caseName]:
-        inputNamingDict = _generate_case_naming_dict('input', caseName, case.caseNumber)
-        outputNamingDict = _generate_case_naming_dict('output', caseName, case.caseNumber)
+        inputNamingDict = _generate_case_naming_dict('input', caseName, case.caseNumber, incrementor)
+        outputNamingDict = _generate_case_naming_dict('output', caseName, case.caseNumber, incrementor)
 
         inputFilePath = fileops.join_path(inputPath, namingScheme.format(**inputNamingDict))
         outputFilePath = fileops.join_path(outputPath, namingScheme.format(**outputNamingDict))
 
         fileops.write_file(inputFilePath, case.inputContents)
         fileops.write_file(outputFilePath, case.outputContents)
+        incrementor += 1
+
+    return incrementor
 
 def compress_case(caseName: str, casePath: str, compressionDict: dict):
     """
@@ -124,7 +127,8 @@ def compress_case(caseName: str, casePath: str, compressionDict: dict):
         elif compressionDict['method'] == 'targz':
             fileops.tardir(casePath, '{}.tar.gz'.format(casePath))
 
-def package_type(packagePath: str, cases: list, packageType: dict, compressionDict: dict):
+def package_type(packagePath: str, cases: list, packageType: dict, compressionDict: dict,
+        typeName: str):
     """
     Packages a specific case type by first making the directory that it belongs
     in, then packaging its cases, then compressing its cases
@@ -137,10 +141,11 @@ def package_type(packagePath: str, cases: list, packageType: dict, compressionDi
     compressionDict: dict - The dictionary corresponding to the compression
                             settings from the config file
     """
+    incrementor = 0
     for case in packageType['cases']:
-        casePath = fileops.join_path(packagePath, case)
+        casePath = fileops.join_path(packagePath, typeName)
         fileops.make(casePath, FileType.DIRECTORY)
-        package_case(case, casePath, cases, packageType['naming'])
+        incrementor = package_case(case, casePath, cases, packageType['naming'], incrementor)
         compress_case(case, casePath, compressionDict)
 
 def _get_compression_from_layout_dict(layoutDict: dict):
@@ -177,7 +182,8 @@ def package_into_path(path: str, layoutDict: dict):
         # Go through each type in the config file and package it
         for packageTypeName, packageType in layoutDict[TYPES_KEY].items():
             package_type(problemPath, caseList, packageType, 
-                _get_compression_from_layout_dict(layoutDict))
+                _get_compression_from_layout_dict(layoutDict),
+                packageTypeName)
 
 def package(savePaths: list, configFilePath: str=None, layout: str=None):
     """

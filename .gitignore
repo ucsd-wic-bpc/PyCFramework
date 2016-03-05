@@ -8,3 +8,5 @@ Solutions/FinalIO/
 !Solutions/dev/conf/
 !Solutions/dev/util/
 !Solutions/dev/tests/
+*.pyc
+.dropbox
