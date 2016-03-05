@@ -2,17 +2,25 @@
 	"hackerrank" : {
 		"types" : {
 			"corner" : {
-				"cases"  : ["corner", "sample"],
-				"naming" : "{input_output}_{caseType}_{number}.txt"
+				"cases"  : ["sample", "corner"],
+				"naming" : "{input_output}{inc}.txt"
 			},
 			"general" : {
-				"cases"  : ["general", "sample"],
-				"naming" : "{input_output}_{caseType}_{number}.txt"
+				"cases"  : ["sample", "general"],
+				"naming" : "{input_output}{inc}.txt"
 			}
 		},
 		"compression" : {
 			"enabled" : true,
 			"method"  : "zip"
+		}
+	},
+	"samples" : {
+		"types": {
+			"sample" : {
+				"cases" : ["sample"],
+				"naming" : "sample_{input_output}_{number}.txt"
+			}
 		}
 	}
 }
