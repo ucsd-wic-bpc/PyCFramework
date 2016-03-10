@@ -49,7 +49,7 @@ def add_to_subparser_object(subparserObject, parentParser):
     subparserObject - The ArgumentParser given by parser.add_subparsers() to
                       add the "add" subparser to.
     parentParser    - The parser to be included as a parent to the subparser,
-                      useful for global glags.
+                      useful for global flags.
     """
     addParser = subparserObject.add_parser(SUBPARSER_KEYWORD, 
                                             parents=[parentParser])
