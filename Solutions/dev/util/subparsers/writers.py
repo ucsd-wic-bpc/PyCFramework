@@ -17,6 +17,7 @@ from collections import deque
 
 from util.subparsers.subparsers import writerslist as writersListSubparser
 from util.subparsers.subparsers import writerstodo as writersTodoSubparser
+from util.subparsers.subparsers import writersadd as writersAddSubparser
 
 SUBPARSER_KEYWORD = 'writers'
 ADD_COMMAND    = 'add'
@@ -43,9 +44,7 @@ def operate(args):
     commandPositionals = commandArg[1:]
     command = commandArg[0]
 
-    if command == ADD_COMMAND:
-        add_writer(commandPositionals, args)
-    elif command == DELETE_COMMAND:
+    if command == DELETE_COMMAND:
         delete_writer(commandPositionals, args)
     elif command == IMPORT_COMMAND:
         import_writers(commandPositionals)
@@ -74,6 +73,7 @@ def add_to_subparser_object(subparserObject, parentParser):
     subparsers = writerParser.add_subparsers()
     writersListSubparser.add_to_subparser_object(subparsers, parentParser)
     writersTodoSubparser.add_to_subparser_object(subparsers, parentParser)
+    writersAddSubparser.add_to_subparser_object(subparsers, parentParser)
 
 
 def _form_writer_list_from_names(writerNames:list, skipInvalidWriters=False):
