@@ -19,9 +19,9 @@ from util.subparsers.subparsers import writerslist as writersListSubparser
 from util.subparsers.subparsers import writerstodo as writersTodoSubparser
 from util.subparsers.subparsers import writersadd as writersAddSubparser
 from util.subparsers.subparsers import writersedit as writersEditSubparser
+from util.subparsers.subparsers import writersdelete as writersDelSubparser
 
 SUBPARSER_KEYWORD = 'writers'
-DELETE_COMMAND = 'delete'
 ASSIGN_COMMAND = 'assign'
 
 def operate(args):
@@ -42,9 +42,7 @@ def operate(args):
     commandPositionals = commandArg[1:]
     command = commandArg[0]
 
-    if command == DELETE_COMMAND:
-        delete_writer(commandPositionals, args)
-    elif command == ASSIGN_COMMAND:
+    if command == ASSIGN_COMMAND:
         assign_problems(commandPositionals, args.problems, args.language)
     else:
         #TODO: Change this print statement to the new output format
@@ -69,6 +67,7 @@ def add_to_subparser_object(subparserObject, parentParser):
     writersTodoSubparser.add_to_subparser_object(subparsers, parentParser)
     writersAddSubparser.add_to_subparser_object(subparsers, parentParser)
     writersEditSubparser.add_to_subparser_object(subparsers, parentParser)
+    writersDelSubparser.add_to_subparser_object(subparsers, parentParser)
 
 
 def _form_writer_list_from_names(writerNames:list, skipInvalidWriters=False):

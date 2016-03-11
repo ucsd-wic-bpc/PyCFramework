@@ -13,8 +13,6 @@ from util import fileops
 import sys
 SUBPARSER_KEYWORD = 'add'
 
-
-
 def operate(args):
     """
     Takes the passed in args and delegates to proper functionality. This is set
