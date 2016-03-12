@@ -20,9 +20,9 @@ from util.subparsers.subparsers import writerstodo as writersTodoSubparser
 from util.subparsers.subparsers import writersadd as writersAddSubparser
 from util.subparsers.subparsers import writersedit as writersEditSubparser
 from util.subparsers.subparsers import writersdelete as writersDelSubparser
+from util.subparsers.subparsers import writersassign as writersAssignSubparser
 
 SUBPARSER_KEYWORD = 'writers'
-ASSIGN_COMMAND = 'assign'
 
 def operate(args):
     """
@@ -33,20 +33,6 @@ def operate(args):
     args: Namespace - The arguments passed via CLI
     """
     # Differentiate between writers command and additional args
-    commandArg = args.command
-    if commandArg is None or len(commandArg) == 0:
-        # TODO: Switch to new output format
-        print('Error: No command word was provided for writers module')
-        return
-
-    commandPositionals = commandArg[1:]
-    command = commandArg[0]
-
-    if command == ASSIGN_COMMAND:
-        assign_problems(commandPositionals, args.problems, args.language)
-    else:
-        #TODO: Change this print statement to the new output format
-        print('Error: {} is not a valid writers command'.format(command))
 
 def add_to_subparser_object(subparserObject, parentParser):
     """
@@ -68,6 +54,7 @@ def add_to_subparser_object(subparserObject, parentParser):
     writersAddSubparser.add_to_subparser_object(subparsers, parentParser)
     writersEditSubparser.add_to_subparser_object(subparsers, parentParser)
     writersDelSubparser.add_to_subparser_object(subparsers, parentParser)
+    writersAssignSubparser.add_to_subparser_object(subparsers, parentParser)
 
 
 def _form_writer_list_from_names(writerNames:list, skipInvalidWriters=False):
