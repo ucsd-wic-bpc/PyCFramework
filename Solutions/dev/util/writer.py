@@ -384,10 +384,24 @@ class Writers:
                           set(writerFilter[cls.FILTER_KEY_COMPLETED_PROBLEMS]).issubset(
                               writer._solutions.keys())]
 
-        if cls.FILTER_KEY_TODO_PROBLEMS in writerFilter:
+        # Narrow it down for todo problems AND todo languages first
+        if cls.FILTER_KEY_TODO_PROBLEMS in writerFilter and cls.FILTER_KEY_TODO_LANGS in writerFilter:
             writerList = [writer for writer in writerList if 
                     set(writerFilter[cls.FILTER_KEY_TODO_PROBLEMS]).issubset(
-                        [item[0] for item in writer.get_assigned_problems_not_started()])]
+                        [item[0] for item in writer.get_assigned_problems_not_started() 
+                         if item[1] in writerFilter[cls.FILTER_KEY_TODO_LANGS]])]
+        else:
+            # Narrow it down for todo problems OR todo languages
+            if cls.FILTER_KEY_TODO_PROBLEMS in writerFilter:
+                writerList = [writer for writer in writerList if 
+                        set(writerFilter[cls.FILTER_KEY_TODO_PROBLEMS]).issubset(
+                            [item[0] for item in writer.get_assigned_problems_not_started()])]
+
+            if cls.FILTER_KEY_TODO_LANGS in writerFilter:
+                writerList = [writer for writer in writerList if 
+                              set(writerFilter[cls.FILTER_KEY_TODO_LANGS]).issubset(
+                                  [item[1] for item in writer.get_assigned_problems_not_started()])]
+
                 
         if cls.FILTER_KEY_EMAILS in writerFilter:
             writerList = [writer for writer in writerList if writer.email in 
@@ -397,10 +411,6 @@ class Writers:
             writerList = [writer for writer in writerList if 
                           writer.knows_languages(writerFilter[cls.FILTER_KEY_KNOWS_LANGS])]
 
-        if cls.FILTER_KEY_TODO_LANGS in writerFilter:
-            writerList = [writer for writer in writerList if 
-                          set(writerFilter[cls.FILTER_KEY_TODO_LANGS]).issubset(
-                              [item[1] for item in writer.get_assigned_problems_not_started()])]
 
         if cls.FILTER_KEY_FULL_NAMES in writerFilter:
             writerList = [writer for writer in writerList if writer.name

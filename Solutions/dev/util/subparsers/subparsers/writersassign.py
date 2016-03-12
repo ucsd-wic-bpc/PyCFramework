@@ -11,8 +11,7 @@ from util.writer import Writer, Writers
 from util.definitions import Definitions
 from util.perror import PyCException
 from util.parse import NumberParse
-import queue
-
+import queue 
 SUBPARSER_KEYWORD = 'assign'
 """
 The proposed plan:
@@ -50,6 +49,7 @@ class AssignedSpecificProblem(SpecificProblem):
     def __init__(self, problemNumber, language, assignments):
         SpecificProblem.__init__(self, problemNumber, language)
         self.assignmentCount = assignments
+        self.considered = True
 
     @classmethod
     def from_specific_problem(cls, problem, assignments):
@@ -87,22 +87,57 @@ class AssignmentAllocator(object):
 
     def do_assignment(self, completionThreshold, overflow=False, overflowDiff=2):
         """ Assigns the problems evenly to all writers """
-        nextProblem = self.allocation_queue.get()
-        print("Doing something for {}".format(nextProblem.problemNumber))
-        if ((nextProblem.assignmentCount > completionThreshold and not overflow)
-            or (nextProblem.assignmentCount > completionThreshold and 
-                nextProblem.assignmentCount - completionThreshold > overflowDiff)):
+        # Get the next problem off of the queue. If the queue is empty, we 
+        # simply return since there is nothing left to do 
+        try:
+            nextProblem = self.allocation_queue.get_nowait()
+        except queue.Empty:
             return
 
-        nextWriter = self.writer_queue.get()
-        print("Seeing is {} is eligible".format(nextWriter.writer.name))
-        #TODO: Ensure that writer is eligible for the problem
-        nextWriter.writer.add_assigned_problem(nextProblem.problemNumber, 
-                nextProblem.language.name)
-        nextWriter.assignedCount += 1
-        nextProblem.assignmentCount += 1
-        self.writer_queue.put(nextWriter)
-        self.allocation_queue.put( nextProblem)
+        # If this particular problem has already been assigned enough times,
+        # skip it and move onto the next problem
+        if ((nextProblem.assignmentCount >= completionThreshold and not overflow)
+            or (nextProblem.assignmentCount >= completionThreshold and 
+                nextProblem.assignmentCount - completionThreshold >= overflowDiff)):
+            return self.do_assignment(completionThreshold, overflow=overflow, overflowDiff=overflowDiff)
+
+        # Keep track of the number of writers we need to scan and keep track
+        # of which ones we have not assigned
+        writerCount = self.writer_queue.qsize()
+        writersSearched = 1
+        unassignedWriters = []
+
+        while writersSearched <= writerCount:
+            # Consider this writer and see if they are able to complete this
+            # problem.
+            nextWriter = self.writer_queue.get_nowait()
+            if (nextWriter.writer.knows_language(nextProblem.language.name) and 
+               (nextProblem.problemNumber, nextProblem.language.name) not in 
+                nextWriter.writer.assignedProblems):
+                    # They are able to complete it. Assign it, incremement
+                    # counters, requeue, and break.
+                    nextWriter.writer.add_assigned_problem(nextProblem.problemNumber, 
+                            nextProblem.language.name)
+                    nextWriter.assignedCount += 1
+                    nextProblem.assignmentCount += 1
+                    self.writer_queue.put(nextWriter)
+                    self.allocation_queue.put(nextProblem)
+                    break
+
+            # This writer could not complete the problem.
+            # Mark that we've searched another writer. If we reach this point,
+            # then we need to mark this writer as unassigned
+            writersSearched += 1
+            unassignedWriters.append(nextWriter)
+
+        # Requeue all the unassigned writers
+        for unassignedWriter in unassignedWriters:
+            self.writer_queue.put(unassignedWriter)
+
+        if writersSearched <= writerCount:
+            self.allocation_queue.put(nextProblem)
+               
+        # Recurse to get all the other problems as well
         self.do_assignment(completionThreshold, overflow=overflow, overflowDiff=overflowDiff)
 
     def populate_allocation_queue(self, allZeroes=False):
@@ -112,7 +147,7 @@ class AssignmentAllocator(object):
         writersAssignedDict = {}
         print(allZeroes)
         if not allZeroes:
-            (problemsAssignedDict, writersAssignedDict) = count_assignments()
+            (problemsAssignedDict, writersAssignedDict) = self.count_assignments()
 
 
         # Now fill in zeroes for all not listed problems
@@ -125,7 +160,8 @@ class AssignmentAllocator(object):
         # Now fill in zeroes for all not listed writers
         for writer in self.writers:
             # If we are reassigning, unassign from all writers as well
-            if allZeroes: writer.unassign_all_problems()
+            if allZeroes: 
+                writer.unassign_all_problems()
             if not writer in writersAssignedDict:
                 writersAssignedDict[writer] = 0
 
@@ -142,7 +178,8 @@ class AssignmentAllocator(object):
         """ Looks through all writers' assigned solutions and counts which have
         been assigned and how many times they have """
         problemsAssignedDict = {} # Maps specificProblems to completed counts
-        for writer in self.writers:
+        writersAssignedDict = {}
+        for writer in Writers.get_all_writers():
             for (problemNumber, problemLanguage) in writer.assignedProblems:
                 languageObject = Languages.get_language_by_name(problemLanguage)
 
@@ -156,8 +193,9 @@ class AssignmentAllocator(object):
                     problemsAssignedDict[specificInstance] = 0
                 else:
                     problemsAssignedDict[specificInstance] += 1
+            writersAssignedDict[writer] = len(writer.assignedProblems)
 
-        return problemsAssignedDict
+        return (problemsAssignedDict, writersAssignedDict)
 
 def operate(args):
     """
