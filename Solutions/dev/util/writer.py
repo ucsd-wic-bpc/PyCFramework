@@ -26,12 +26,21 @@ class Writer:
         self.knownLanguages = {} # {language.name : language}
         self.assignedProblems = [] # [(problemNumber, language)]
 
+    def __hash__(self):
+        return hash(self.name) + hash(self.email) + hash(self._path)
+
+    def __eq__(self, other):
+        return (self.name  == other.name and
+                self.email == other.email and
+                self._path == other._path)
+
+
     def __str__(self):
         solutionsString = ''
         for solution in self.get_all_solutions():
             solutionsString += '{}\n'.format(str(solution))
 
-        return 'Directory: {}\nName: {}\nEmail: {}\nKnown Languages: {}\nAssigned Problems:{}\nSolutions: \n{}\n'.format(
+        return 'Directory: {}\nName: {}\nEmail: {}\nKnown Languages: {}\nAssigned Problems:{}\nSolutions: \n{}'.format(
                 self._path, self.name, self.email, ', '.join(list(self.knownLanguages.keys())),
                 ', '.join(['{} in {}'.format(item[0], item[1]) for item in sorted(self.assignedProblems)]),
                 solutionsString)
@@ -71,6 +80,13 @@ class Writer:
 
     def knows_language(self, languageName):
         return languageName in self.knownLanguages
+
+    def knows_languages(self, languageNames: list):
+        for languageName in languageNames:
+            if not self.knows_language(languageName):
+                return False
+
+        return True
 
     def add_assigned_problem(self, problemNumber, languageName):
         self._add_assigned_problem( problemNumber, languageName)
@@ -250,6 +266,16 @@ class Writers:
     """
     Handle the .writers.json config file
     """
+    # filter keys
+    FILTER_KEY_DIRS               = 'directories'
+    FILTER_KEY_COMPLETED_PROBLEMS = 'completedProblems'
+    FILTER_KEY_TODO_PROBLEMS      = 'todoProblems'
+    FILTER_KEY_EMAILS             = 'emails'
+    FILTER_KEY_KNOWS_LANGS        = 'knowsLanguages'
+    FILTER_KEY_TODO_LANGS         = 'todoInLanguages'
+    FILTER_KEY_FIRST_NAMES        = 'firstNames'
+    FILTER_KEY_FULL_NAMES         = 'fullNames'
+
     JSON_FILE = '.writers.json'
     writers = None
 
@@ -320,3 +346,83 @@ class Writers:
             cls._load_from_config()
 
         return writerName in cls.writers
+
+    @classmethod
+    def get_writers_from_filter(cls, writerFilter:dict={}):
+        """
+        A wrapper which removes all keys where the value is an empty list
+        """
+        for key,value in dict(writerFilter).items():
+            if value is None or ( isinstance(value, list) and len(value) == 0):
+                writerFilter.pop(key, None)
+
+        return cls._get_writers_from_filter(writerFilter)
+
+    @classmethod
+    def _get_writers_from_filter(cls, writerFilter:dict={}):
+        """
+        the writerFilter has the following keys available:
+        {
+            "directories" : [str],
+            "completedProblems" : [int],
+            "todoProblems" : [int],
+            "emails" : [str],
+            "knowsLanguages" : [str],
+            "todoInLanguages" : [str],
+            "firstNames" : [str],
+            "fullNames" : [str]
+        }
+        """
+        writerSet = set()
+        if not cls.FILTER_KEY_DIRS in writerFilter:
+            if not cls.FILTER_KEY_FIRST_NAMES in writerFilter:
+                writerSet = writerSet.union(set(Writers.get_all_writers()))
+            else:
+                writerSet = writerSet.union(set([Writer.load_from_folder(fold) for fold in
+                                     writerFilter[cls.FILTER_KEY_FIRST_NAMES]]))
+        else:
+            writerSet = writerSet.union(set([Writer.load_from_path(specifiedPath) for
+                                 specifiedPath in writerFilter[cls.FILTER_KEY_DIRS]]))
+            if cls.FILTER_KEY_FIRST_NAMES in writerFilter:
+                writerSet = writerSet.union(set([Writer.load_from_folder(fold) for fold in
+                                     writerFilter[cls.FILTER_KEY_FIRST_NAMES]]))
+
+        writerList = list(writerSet)
+        if cls.FILTER_KEY_COMPLETED_PROBLEMS in writerFilter:
+            writerList = [writer for writer in writerList if
+                          set(writerFilter[cls.FILTER_KEY_COMPLETED_PROBLEMS]).issubset(
+                              writer._solutions.keys())]
+
+        # Narrow it down for todo problems AND todo languages first
+        if cls.FILTER_KEY_TODO_PROBLEMS in writerFilter and cls.FILTER_KEY_TODO_LANGS in writerFilter:
+            writerList = [writer for writer in writerList if 
+                    set(writerFilter[cls.FILTER_KEY_TODO_PROBLEMS]).issubset(
+                        [item[0] for item in writer.get_assigned_problems_not_started() 
+                         if item[1] in writerFilter[cls.FILTER_KEY_TODO_LANGS]])]
+        else:
+            # Narrow it down for todo problems OR todo languages
+            if cls.FILTER_KEY_TODO_PROBLEMS in writerFilter:
+                writerList = [writer for writer in writerList if 
+                        set(writerFilter[cls.FILTER_KEY_TODO_PROBLEMS]).issubset(
+                            [item[0] for item in writer.get_assigned_problems_not_started()])]
+
+            if cls.FILTER_KEY_TODO_LANGS in writerFilter:
+                writerList = [writer for writer in writerList if 
+                              set(writerFilter[cls.FILTER_KEY_TODO_LANGS]).issubset(
+                                  [item[1] for item in writer.get_assigned_problems_not_started()])]
+
+                
+        if cls.FILTER_KEY_EMAILS in writerFilter:
+            writerList = [writer for writer in writerList if writer.email in 
+                          writerFilter[cls.FILTER_KEY_EMAILS]]
+
+        if cls.FILTER_KEY_KNOWS_LANGS in writerFilter:
+            writerList = [writer for writer in writerList if 
+                          writer.knows_languages(writerFilter[cls.FILTER_KEY_KNOWS_LANGS])]
+
+
+        if cls.FILTER_KEY_FULL_NAMES in writerFilter:
+            writerList = [writer for writer in writerList if writer.name
+                          in writerFilter[cls.FILTER_KEY_FULL_NAMES]]
+
+        return writerList
