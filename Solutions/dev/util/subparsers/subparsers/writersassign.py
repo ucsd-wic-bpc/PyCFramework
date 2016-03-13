@@ -55,7 +55,6 @@ class AssignedSpecificProblem(SpecificProblem):
     def __init__(self, problemNumber, language, assignments):
         SpecificProblem.__init__(self, problemNumber, language)
         self.assignmentCount = assignments
-        self.considered = True
 
     @classmethod
     def from_specific_problem(cls, problem, assignments):

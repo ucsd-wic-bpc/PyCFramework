@@ -10,6 +10,13 @@ from util.perror import PyCException
 from util.writer import Writer
 SUBPARSER_KEYWORD = 'edit'
 
+def replace_list_with_none_if_empty(list):
+    if list is None: return list
+    if len(list) == 0:
+        return None
+    else:
+        return list[0]
+
 def operate(args):
     """
     Takes the passed in args and delegates to proper functionality. This is set
@@ -22,12 +29,6 @@ def operate(args):
     if args.writer_path is None:
         raise PyCException('Error: No writer folder provided')
 
-    def replace_list_with_none_if_empty(list):
-        if list is None: return list
-        if len(list) == 0:
-            return None
-        else:
-            return list[0]
 
     edit_writer_information(args.writer_path, 
             replace_list_with_none_if_empty(args.name), 

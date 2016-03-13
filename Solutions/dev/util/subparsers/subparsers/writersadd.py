@@ -9,6 +9,7 @@
 from util.writer import Writers, Writer
 from util.perror import PyCException
 from util.pathmapper import PathMapper
+from util.subparsers.subparsers import writersedit as editSubparser
 from util import fileops
 import sys
 SUBPARSER_KEYWORD = 'add'
@@ -33,7 +34,10 @@ def operate(args):
         add_users_interactively(showhint = args.showhint)
     elif len(args.writer_names) == 1:
         add_user_quick(args.writer_names[0])
-        #TODO: Delegate to the EDIT subparser to edit this user with details
+        editSubparser.edit_writer_information(args.writer_names[0],
+                editSubparser.replace_list_with_none_if_empty(args.name),
+                editSubparser.replace_list_with_none_if_empty(args.email),
+                args.language)
     else:
         # Create users with the names provided
         add_users_quick(args.writer_names)
