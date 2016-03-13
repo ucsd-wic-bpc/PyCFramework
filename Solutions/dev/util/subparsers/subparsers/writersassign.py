@@ -44,6 +44,12 @@ class SpecificProblem(object):
         self.problemNumber = problemNumber
         self.language = language
 
+    def __hash__(self):
+        return hash(self.language.name) + self.problemNumber
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
 class AssignedSpecificProblem(SpecificProblem):
 
     def __init__(self, problemNumber, language, assignments):
@@ -145,7 +151,6 @@ class AssignmentAllocator(object):
         to the allocation queue """
         problemsAssignedDict = {}
         writersAssignedDict = {}
-        print(allZeroes)
         if not allZeroes:
             (problemsAssignedDict, writersAssignedDict) = self.count_assignments()
 
@@ -190,10 +195,13 @@ class AssignmentAllocator(object):
 
                 specificInstance = SpecificProblem(problemNumber, languageObject)
                 if not specificInstance in problemsAssignedDict:
-                    problemsAssignedDict[specificInstance] = 0
+                    problemsAssignedDict[specificInstance] = 1
                 else:
                     problemsAssignedDict[specificInstance] += 1
-            writersAssignedDict[writer] = len(writer.assignedProblems)
+            
+            if writer in self.writers:
+                writersAssignedDict[writer] = len(writer.assignedProblems)
+
 
         return (problemsAssignedDict, writersAssignedDict)
 
@@ -224,7 +232,7 @@ def operate(args):
                 Languages.get_all_language_names()]
 
     specifiedWriters = []
-    if not args.writer_names is None and len(args.writer_names) > 0:
+    if not args.full and not args.writer_names is None and len(args.writer_names) > 0:
         for writerName in args.writer_names:
             loadedWriter = Writer.load_from_folder(writerName)
             if loadedWriter is None:
