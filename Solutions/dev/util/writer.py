@@ -26,6 +26,15 @@ class Writer:
         self.knownLanguages = {} # {language.name : language}
         self.assignedProblems = [] # [(problemNumber, language)]
 
+    def __hash__(self):
+        return hash(self.name) + hash(self.email) + hash(self._path)
+
+    def __eq__(self, other):
+        return (self.name  == other.name and
+                self.email == other.email and
+                self._path == other._path)
+
+
     def __str__(self):
         solutionsString = ''
         for solution in self.get_all_solutions():
