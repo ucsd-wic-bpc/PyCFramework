@@ -10,6 +10,7 @@ from util.writer import Writer, Writers
 from util import case as CaseManager
 from util.language import ExecutionError
 from util.case import KnownCase
+from util.perror import PyCException
 import difflib
 
 SUBPARSER_KEYWORD = "test"
