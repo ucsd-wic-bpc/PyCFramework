@@ -1,0 +1,45 @@
+{
+  "file": {
+    "header" : "{file/imports_java} public class Problem{problem} {{",
+    "footer" : "}} {file/jsonfast_java}"
+  },
+
+  "user_impl": {
+    "header" : "public static {returnType} {methodName}({formalsList}) {{",
+    "body"   : ["//TODO",
+                "return {defaultReturnType};"
+               ],
+    "footer" : "}}"
+  },
+
+  "main" : {
+    "header" : "public static void main(String[] args) {{",
+    "footer" : "}}",
+    "parse_input" : [
+      "String input = new Scanner(System.in).nextLine();",
+      "JSONList argList = (JSONList) JSONParser.getObjectFromString(input);"
+    ],
+    "store_output" : "{methodName}({actualsList});",
+    "print_output" : "System.out.println(output);",
+
+    "decl" : "{type} {varName} = "
+  },
+
+  "args": {
+    "float": "argList.getItem({argNum}).castToDouble();",
+    "str" : "argList.getItem({argNum}).getData();"
+  },
+
+  "default_values": {
+    "int": "0",
+    "float": "0.0",
+    "str": "\"\""
+  },
+
+  "types" : {
+    "float": "double",
+    "str" : "String",
+    "int" : "int"
+  }
+
+}

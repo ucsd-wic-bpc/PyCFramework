@@ -140,15 +140,17 @@ def join_path(path, *parts):
     """
     return os.path.join(path, *parts)
 
-def get_files_in_dir(path: str, recursive: bool=False, getHidden: bool=False) -> list:
+def get_files_in_dir(path: str, recursive: bool=False, getHidden: bool=False, 
+                     relative_to_path=False) -> list:
     """
     Returns a list of filepaths within a directory. Also includes child directories if recursive
     """
     if not recursive:
-        return [join_path(path, filePath) for filePath in os.listdir(path) if 
+        paths = [filePath for filePath in os.listdir(path) if 
                 os.path.isfile(join_path(path, filePath)) and 
                 (getHidden and file_is_hidden(filePath)) or 
                 (not getHidden and not file_is_hidden(filePath)) ]
+        return [os.path.join(path, filePath) for filePath in paths] if not relative_to_path else paths
     else:
         workingFileList = get_files_in_dir(path, recursive=False)
         for filePath in os.listdir(path):
