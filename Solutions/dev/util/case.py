@@ -149,8 +149,8 @@ def _get_all_cases(directory, problemNumber=None):
     cases = {}
 
     for possibleCaseFile in fileops.get_files_in_dir(directory):
-        #if "general" in possibleCaseFile:
-            #continue
+        if "_data" in possibleCaseFile:
+            continue
         problemTypeTuple = _get_file_problemnumber_type_tuple(possibleCaseFile)
         if (not problemNumber is None and 
             not problemTypeTuple[0] == int(problemNumber)):
@@ -160,7 +160,6 @@ def _get_all_cases(directory, problemNumber=None):
         cases[problemTypeTuple[0]].extend(
                 _get_cases_from_json_file_given_problem_type(possibleCaseFile,
                 problemTypeTuple[0], problemTypeTuple[1]))
-
     return cases
 
 def get_all_cases(problemNumber=None):
