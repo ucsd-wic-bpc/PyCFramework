@@ -1,0 +1,3 @@
+[submodule "Solutions/dev/util/templating/jsonstubber"]
+	path = Solutions/dev/util/templating/jsonstubber
+	url = https://github.com/ucsd-wic-bpc/jsonstubber
