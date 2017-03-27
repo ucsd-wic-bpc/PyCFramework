@@ -18,10 +18,12 @@ heh)
 import json
 from util.pathmapper import PathMapper
 from util import case, fileops
-from util.fileops import FileType, get_files_in_dir, join_path, get_json_dict, get_path_with_changed_extension
+from util.fileops import FileType, get_files_in_dir, join_path, get_json_dict, get_path_with_changed_extension, write_file
 from util.case import Case, get_all_cases
 from util.definitions import Definitions
 from util.language import Languages
+from util.templating.jsonstubber.json_stubber import JSONTypes, JSONContainer, JSONType
+from util.templating.jsonstubber.java_stubber import JavaJSONStubber
 
 SUBPARSER_KEYWORD = 'template'
 templateDictionary = None
@@ -61,9 +63,10 @@ def generate_templates_from_case_files(problems:list, languages: list,
     """
     for problem in problems:
         caseList = get_all_cases(problemNumber=problem)[int(problem)]
-        if languages is None or len(languages) == 0:
-            languages = Languages.get_all_language_names()
-        generate_template_for_case_collection(caseList, languages, outputPath, problem)
+
+        for language in languages or Languages.get_all_language_names():
+            language = Languages.get_language_by_name(language)
+            generate_template_for_case_collection(caseList, language, outputPath, problem)
 
 def get_jsonstr(jsonstr):
     """
@@ -75,20 +78,35 @@ def get_jsonstr(jsonstr):
     else:
         return jsonstr
 
+def get_type_root(jsontype):
+    root = jsontype
+    while isinstance(root, JSONContainer):
+        root = root.subtype
+
+    return root
+
 def get_type_from_many(jsonstrs):
     strtypes = [get_type(jsonstr) for jsonstr in jsonstrs]
 
     finalized_types = []
     for i in range(1, len(strtypes)):
-        if strtypes[i-1] == None or strtypes[i] == None:
+        if strtypes[i-1] is None or strtypes[i] is None:
             continue
 
         # What if types dont match?
         if strtypes[i-1] != strtypes[i]:
-            if "char" in strtypes[i-1] and "str" in strtypes[i]:
+            left_root_type = get_type_root(strtypes[i-1])
+            right_root_type = get_type_root(strtypes[i])
+            if left_root_type == JSONTypes.CHAR and right_root_type == JSONTypes.STRING:
                 strtypes[i-1] = strtypes[i]
                 finalized_types.append(strtypes[i-1])
-            elif "str" in strtypes[i-1] and "char" in strtypes[i]:
+            elif left_root_type == JSONTypes.STRING and right_root_type == JSONTypes.CHAR:
+                strtypes[i] = strtypes[i-1]
+                finalized_types.append(strtypes[i-1])
+            elif left_root_type == JSONTypes.INT and right_root_type == JSONTypes.FLOAT:
+                strtypes[i-1] = strtypes[i]
+                finalized_types.append(strtypes[i-1])
+            elif left_root_type == JSONTypes.FLOAT and right_root_type == JSONTypes.INT:
                 strtypes[i] = strtypes[i-1]
                 finalized_types.append(strtypes[i-1])
             else:
@@ -101,9 +119,9 @@ def get_type_from_many(jsonstrs):
 
 def get_individual_type(parsed_jsonstr):
     if isinstance(parsed_jsonstr, str) and len(parsed_jsonstr) == 1:
-        return 'char'
+        return JSONTypes.CHAR
     else:
-        return type(parsed_jsonstr).__name__
+        return JSONType.parse(type(parsed_jsonstr).__name__)
 
 def get_type(jsonstr):
     """
@@ -114,28 +132,32 @@ def get_type(jsonstr):
     except Exception:
         parsed_jsonstr = jsonstr
 
-    type_string = get_individual_type(parsed_jsonstr)
 
-    list_depth = 0
-    while isinstance(parsed_jsonstr, list):
-        if len(parsed_jsonstr) <= 0:
-            return None
+    if isinstance(parsed_jsonstr, list):
+        list_depth = 0
+        while isinstance(parsed_jsonstr, list):
+            if len(parsed_jsonstr) <= 0:
+                return None
 
-        list_depth += 1
-        parsed_jsonstr = parsed_jsonstr[0]
-        type_string = get_individual_type(parsed_jsonstr)
+            list_depth += 1
+            parsed_jsonstr = parsed_jsonstr[0]
 
-    if list_depth > 0:
-        type_string = "_".join((["list"] * list_depth) + [type_string])
+        jsontype = get_individual_type(parsed_jsonstr)
 
-    return type_string
+        while list_depth > 0:
+            jsontype = JSONContainer(jsontype)
+            list_depth -= 1
+    else:
+        jsontype = get_individual_type(parsed_jsonstr)
+
+    return jsontype
 
 
-def generate_template_for_case_collection(cases: list, languages: list, outputPath: str, problem):
+def generate_template_for_case_collection(cases: list, language: list, outputPath: str, problem):
     # First, let's populate a dictionary with all relevant information about
     # the cases. Let's just use the first case.
-
-    language = Languages.get_language_by_name(languages[0])
+    if language.name != "Java":
+        raise Exception('Generating templates for {} not supported'.format(language.name))
 
     outputType = get_type_from_many([case.outputContents for case in cases])
 
@@ -150,49 +172,17 @@ def generate_template_for_case_collection(cases: list, languages: list, outputPa
 
     inputTypes = [get_type_from_many(inputs) for inputs in input_groups]
 
-    data = get_json_dict('cases/problem{}_data.json'.format(problem))
-    wordNums = data["args"]
-    template = get_json_dict('conf/templates/{}.json'.format(language.name))
+    data = get_json_dict('data/problem{}.json'.format(problem))
+    arg_names = data["args"]
+    method_name = data["method"]
+    class_name = 'Problem{}'.format(problem)
 
-    info_dictionary = {
-        'problem': problem,
-        'returnType': template["types"][outputType],
-        'defaultReturnType': template["default_values"][outputType],
-        'methodName': data["method"],
-        'formalsList': ', '.join(['{} {}'.format(template["types"][i], wordNums[j])
-                                 for j,i in enumerate(inputTypes)]),
-        'actualsList': ', '.join(wordNums[i] for i,j in enumerate(inputTypes))
-    }
+    arguments = [(arg_names[name_index], input_type) for 
+                 name_index, input_type in enumerate(inputTypes)]
 
-    # Now fill the info dictionary with files we might need
-    for f in get_files_in_dir('conf/templates/files', relative_to_path=True):
-        full_path = join_path('conf/templates/files', f)
-        with open(full_path, 'r') as openf:
-            filename_less_ext = get_path_with_changed_extension(f, '')
-            info_dictionary['file/{}'.format(filename_less_ext)] = openf.read()
+    stubber = JavaJSONStubber(jsonfastparse_path='util/templating/jsonstubber/jsonfastparse',
+                              unifiedstr_path='util/templating/jsonstubber/unifiedstr')
+    template = stubber.make_stub(class_name, method_name, outputType, arguments)
 
-
-    def gstr(s):
-        if isinstance(s, list):
-            return '\n'.join(s)
-        else:
-            return s
-
-
-    # Now lets print the sample
-    print(gstr(template["file"]["header"]).format(**info_dictionary))
-    print(gstr(template["user_impl"]["header"]).format(**info_dictionary))
-    print(gstr(template["user_impl"]["body"]).format(**info_dictionary))
-    print(gstr(template["user_impl"]["footer"]).format(**info_dictionary))
-    print(gstr(template["main"]["header"]).format(**info_dictionary))
-    print(gstr(template["main"]["parse_input"]).format(**info_dictionary))
-
-    for i, j in enumerate(inputTypes):
-        info = {"type": template["types"][j], "varName": wordNums[i], "argNum":i}
-        print(gstr(template["args"][j]).format(**info))
-
-    print(gstr(template["main"]["store_output"]).format(**info_dictionary))
-    print(gstr(template["main"]["print_output"]).format(**info_dictionary))
-    print(gstr(template["main"]["footer"]).format(**info_dictionary))
-    print(gstr(template["file"]["footer"]).format(**info_dictionary))
-    return
+    template_path = join_path(outputPath, 'Problem{}.{}'.format(problem, language.get_extension()))
+    write_file(template_path, template)

@@ -37,6 +37,12 @@ class Language:
         self._runCommand = runCommand
         self._runArguments = runArguments
 
+    def __hash__(self):
+        return hash(self.name)
+
+    def __eq__(self, other):
+        return self.name == self.other
+
     def get_extension(self):
         if not self._compileExtension is None:
             return self._compileExtension
@@ -130,9 +136,13 @@ class AppliedLanguage(Language):
 
         compileCommand = [self._compileCommand]
         compileCommand.extend(self._compileArguments)
-        if not subprocess.call(compileCommand, stderr = (open(os.devnull, 'w')
-            if not verbose else sys.stderr)) == 0:
-            raise ExecutionError('Failed to compile')
+        try:
+            if not subprocess.call(compileCommand, stderr = (open(os.devnull, 'w')
+                if not verbose else sys.stderr)) == 0:
+                raise ExecutionError('Failed to compile')
+        except Exception:
+            raise ExecutionError('Could not run command {}'.format(
+                compileCommand[0])) from None
 
         return fileops.get_path_with_changed_extension(self._path, 
                 self._runExtension)
@@ -151,11 +161,17 @@ class AppliedLanguage(Language):
         try:
             encodedInput = inputContents.encode('utf-8')
             output = subprocess.check_output(runCommand, input=encodedInput, 
-                stderr = (open(os.devnull, 'w') if not verbose else sys.stderr)).decode('utf-8')
+                stderr = (open(os.devnull, 'w') if not verbose else sys.stderr),
+                timeout=20).decode('utf-8')
             if not output is None:
                 output = output.replace('\r','')
         except subprocess.CalledProcessError as e:
-            raise ExecutionError('Error: Runtime Error\n{}'.format(e.output))
+            raise ExecutionError('Runtime Error')
+        except subprocess.TimeoutExpired as e:
+            raise ExecutionError('Timeout Expired')
+        except Exception:
+            raise ExecutionError('Could not run command {}'.format(
+                runCommand[0])) from None
 
         return output[:-1]
 

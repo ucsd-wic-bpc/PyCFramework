@@ -69,9 +69,19 @@ def parse_csv(path, delimiter=','):
         return csvList
 
     with open(path, 'r', newline='') as csvfile:
-        csvReader = csv.reader(csvfile, delimiter=delimiter)
-        for row in csvReader:
-            csvList.append(row)
+        csvList = parse_csv_from_file_descriptor(csvfile, delimiter=delimiter)
+
+    return csvList
+
+def parse_csv_from_file_descriptor(fd, delimiter=','):
+    """
+    Returns a list of data found in the csv file descriptor delineated by
+    delimiter.
+    """
+    csvList = []
+    csvReader = csv.reader(fd, delimiter=delimiter)
+    for row in csvReader:
+        csvList.append(row)
 
     return csvList
 
