@@ -24,6 +24,7 @@ from util.definitions import Definitions
 from util.language import Languages
 from util.templating.jsonstubber.json_stubber import JSONTypes, JSONContainer, JSONType
 from util.templating.jsonstubber.java_stubber import JavaJSONStubber
+from util.templating.jsonstubber.cpp_stubber import CppJSONStubber
 
 SUBPARSER_KEYWORD = 'template'
 templateDictionary = None
@@ -156,8 +157,13 @@ def get_type(jsonstr):
 def generate_template_for_case_collection(cases: list, language: list, outputPath: str, problem):
     # First, let's populate a dictionary with all relevant information about
     # the cases. Let's just use the first case.
-    if language.name != "Java":
+    if language.name != "Java" and language.name != "C++":
         raise Exception('Generating templates for {} not supported'.format(language.name))
+
+    stubber_factory_map = {
+        "Java" : JavaJSONStubber,
+        "C++": CppJSONStubber
+    }
 
     outputType = get_type_from_many([case.outputContents for case in cases])
 
@@ -180,7 +186,7 @@ def generate_template_for_case_collection(cases: list, language: list, outputPat
     arguments = [(arg_names[name_index], input_type) for 
                  name_index, input_type in enumerate(inputTypes)]
 
-    stubber = JavaJSONStubber(jsonfastparse_path='util/templating/jsonstubber/jsonfastparse',
+    stubber = stubber_factory_map[language.name](jsonfastparse_path='util/templating/jsonstubber/jsonfastparse',
                               unifiedstr_path='util/templating/jsonstubber/unifiedstr')
     template = stubber.make_stub(class_name, method_name, outputType, arguments)
 
