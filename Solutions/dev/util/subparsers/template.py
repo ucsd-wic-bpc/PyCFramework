@@ -22,9 +22,10 @@ from util.fileops import FileType, get_files_in_dir, join_path, get_json_dict, g
 from util.case import Case, get_all_cases
 from util.definitions import Definitions
 from util.language import Languages
-from util.templating.jsonstubber.json_stubber import JSONTypes, JSONContainer, JSONType
 from util.templating.jsonstubber.java_stubber import JavaJSONStubber
 from util.templating.jsonstubber.cpp_stubber import CppJSONStubber
+from util.templating.jsonstubber.python_stubber import PythonJSONStubber
+from util.templating.pyjsontypes.parse import resolve_type
 
 SUBPARSER_KEYWORD = 'template'
 templateDictionary = None
@@ -69,103 +70,22 @@ def generate_templates_from_case_files(problems:list, languages: list,
             language = Languages.get_language_by_name(language)
             generate_template_for_case_collection(caseList, language, outputPath, problem)
 
-def get_jsonstr(jsonstr):
-    """
-    Return the string associated with the json object. If the json object is
-    a list, the list is joined with newlines
-    """
-    if isinstance(jsonstr, list):
-        return '\n'.join(jsonstr)
-    else:
-        return jsonstr
-
-def get_type_root(jsontype):
-    root = jsontype
-    while isinstance(root, JSONContainer):
-        root = root.subtype
-
-    return root
-
-def get_type_from_many(jsonstrs):
-    strtypes = [get_type(jsonstr) for jsonstr in jsonstrs]
-
-    finalized_types = []
-    for i in range(1, len(strtypes)):
-        if strtypes[i-1] is None or strtypes[i] is None:
-            continue
-
-        # What if types dont match?
-        if strtypes[i-1] != strtypes[i]:
-            left_root_type = get_type_root(strtypes[i-1])
-            right_root_type = get_type_root(strtypes[i])
-            if left_root_type == JSONTypes.CHAR and right_root_type == JSONTypes.STRING:
-                strtypes[i-1] = strtypes[i]
-                finalized_types.append(strtypes[i-1])
-            elif left_root_type == JSONTypes.STRING and right_root_type == JSONTypes.CHAR:
-                strtypes[i] = strtypes[i-1]
-                finalized_types.append(strtypes[i-1])
-            elif left_root_type == JSONTypes.INT and right_root_type == JSONTypes.FLOAT:
-                strtypes[i-1] = strtypes[i]
-                finalized_types.append(strtypes[i-1])
-            elif left_root_type == JSONTypes.FLOAT and right_root_type == JSONTypes.INT:
-                strtypes[i] = strtypes[i-1]
-                finalized_types.append(strtypes[i-1])
-            else:
-                print("ERROR!")
-        else:
-            finalized_types.append(strtypes[i-1])
-
-
-    return finalized_types[0]
-
-def get_individual_type(parsed_jsonstr):
-    if isinstance(parsed_jsonstr, str) and len(parsed_jsonstr) == 1:
-        return JSONTypes.CHAR
-    else:
-        return JSONType.parse(type(parsed_jsonstr).__name__)
-
-def get_type(jsonstr):
-    """
-    Return the type of the provided string
-    """
-    try:
-        parsed_jsonstr = json.loads(jsonstr)
-    except Exception:
-        parsed_jsonstr = jsonstr
-
-
-    if isinstance(parsed_jsonstr, list):
-        list_depth = 0
-        while isinstance(parsed_jsonstr, list):
-            if len(parsed_jsonstr) <= 0:
-                return None
-
-            list_depth += 1
-            parsed_jsonstr = parsed_jsonstr[0]
-
-        jsontype = get_individual_type(parsed_jsonstr)
-
-        while list_depth > 0:
-            jsontype = JSONContainer(jsontype)
-            list_depth -= 1
-    else:
-        jsontype = get_individual_type(parsed_jsonstr)
-
-    return jsontype
-
 
 def generate_template_for_case_collection(cases: list, language: list, outputPath: str, problem):
-    # First, let's populate a dictionary with all relevant information about
-    # the cases. Let's just use the first case.
-    if language.name != "Java" and language.name != "C++":
-        raise Exception('Generating templates for {} not supported'.format(language.name))
 
     stubber_factory_map = {
         "Java" : JavaJSONStubber,
-        "C++": CppJSONStubber
+        "C++": CppJSONStubber,
+        "Python": PythonJSONStubber
     }
 
-    outputType = get_type_from_many([case.outputContents for case in cases])
+    if language.name not in stubber_factory_map:
+        raise Exception('Generating templates for {} not supported'.format(language.name))
+
+    outputType = resolve_type([case.outputContents for case in cases])
+
+    if outputType is None:
+        raise Exception('Could not deduce output type for problem {}'.format(problem))
 
     # A list of input groups such that input_groups[0] is a list of all the first inputs
     input_groups = []
@@ -176,14 +96,17 @@ def generate_template_for_case_collection(cases: list, language: list, outputPat
 
             input_groups[i].append(input)
 
-    inputTypes = [get_type_from_many(inputs) for inputs in input_groups]
+    inputTypes = [resolve_type(inputs) for inputs in input_groups]
+
+    if inputTypes is None:
+        raise Exception('Could not deduce input types for problem {}'.format(problem))
 
     data = get_json_dict('data/problem{}.json'.format(problem))
     arg_names = data["args"]
     method_name = data["method"]
     class_name = 'Problem{}'.format(problem)
 
-    arguments = [(arg_names[name_index], input_type) for 
+    arguments = [(arg_names[name_index], input_type) for
                  name_index, input_type in enumerate(inputTypes)]
 
     stubber = stubber_factory_map[language.name](jsonfastparse_path='util/templating/jsonstubber/jsonfastparse',
