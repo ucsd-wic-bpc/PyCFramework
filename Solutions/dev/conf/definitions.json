@@ -12,6 +12,6 @@
 	 "solution_naming"          : "Problem{problem}",
 	 "output_naming"            : "problem{problem}_{caseType}_{language}",
 	 "problem_count"            : 15,
-   "complete_threshold"       : 2,
-   "template_data_directory"  : "data"
+   "template_data_directory"  : "data",
+   "complete_threshold"       : 3
 }

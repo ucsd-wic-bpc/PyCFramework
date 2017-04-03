@@ -46,14 +46,18 @@ def parse_arguments(arguments, output=sys.stdout):
     else:
         try:
             args = argParser.parse_args(arguments)
+
+            if args.help:
+                argParser.print_help()
+                return None
+
             if args.func:
                 args.func(args)
-        except Exception as e: 
+
+        except Exception as e:
             print(str(e))
-            return None 
-        if args.help:
-            argParser.print_help()
             return None
+
 
         return args
 
