@@ -17,6 +17,7 @@ from util.subparsers import writers as writersSubparser
 from util.subparsers import test as testSubparser
 from util.subparsers import package as packageSubparser
 from util.subparsers import validate as validateSubparser
+from util.subparsers import template as templateSubparser
 
 def parse_arguments(arguments, output=sys.stdout):
     argParser = PCArgParseFactory.get_argument_parser(output)
@@ -37,6 +38,7 @@ def parse_arguments(arguments, output=sys.stdout):
     testSubparser.add_to_subparser_object(subparsers, baseParser)
     packageSubparser.add_to_subparser_object(subparsers, baseParser)
     validateSubparser.add_to_subparser_object(subparsers, baseParser)
+    templateSubparser.add_to_subparser_object(subparsers, baseParser)
 
     if len(arguments) == 0:
         argParser.print_help()

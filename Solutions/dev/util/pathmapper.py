@@ -27,9 +27,22 @@ class PathMapper:
         return fileops.join_path(cls._rootPath, cls.CONFIG_DIR)
 
     @classmethod
-    def get_mapped_path(cls, path):
+    def get_mapped_config_path(cls, *parts):
+        """
+        Returns the config path appended with the provided parts
+        """
+        return fileops.join_path(cls.get_config_path(), *parts)
+
+    @classmethod
+    def get_mapped_path(cls, *parts):
         """
         Returns the root path appended with the provided path
         """
-        return fileops.join_path(cls._rootPath, path)
-        
+        return fileops.join_path(cls._rootPath, *parts)
+
+    @classmethod
+    def get_mapped_path_from_parent(cls, *parts):
+        """
+        Returns the parent of the root path appended with the provided parts
+        """
+        return fileops.join_path(fileops.get_parent_dir(cls._rootPath), *parts)

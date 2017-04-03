@@ -1,0 +1,6 @@
+[submodule "Solutions/dev/util/templating/jsonstubber"]
+	path = Solutions/dev/util/templating/jsonstubber
+	url = https://github.com/ucsd-wic-bpc/jsonstubber
+[submodule "Solutions/dev/util/templating/pyjsontypes"]
+	path = Solutions/dev/util/templating/pyjsontypes
+	url = https://github.com/ucsd-wic-bpc/pyjsontypes
