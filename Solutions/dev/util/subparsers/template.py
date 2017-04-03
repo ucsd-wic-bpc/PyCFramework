@@ -17,7 +17,7 @@ heh)
 """
 import json
 from util.pathmapper import PathMapper
-from util.fileops import join_path, get_json_dict, write_file
+from util.fileops import join_path, get_json_dict, write_file, make, FileType
 from util.case import get_all_cases
 from util.definitions import Definitions
 from util.language import Languages
@@ -65,6 +65,7 @@ def generate_templates_from_case_files(problems: list, languages: list,
     """
     Attempts to generate template files for the given case files.
     """
+    make(outputPath, FileType.DIRECTORY)
     for problem in problems:
         caseList = get_all_cases(problemNumber=problem)[int(problem)]
 

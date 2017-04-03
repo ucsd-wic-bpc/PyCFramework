@@ -37,7 +37,7 @@ def make(path, fileType):
     if fileType == FileType.FILE:
         os.mknod(path)
     else:
-        os.mkdir(path)
+        os.makedirs(path)
     return True
 
 def remove(path, fileType):
