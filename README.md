@@ -1,12 +1,8 @@
-[![Stories in Ready](https://badge.waffle.io/brandonio21/PyCFramework.png?label=ready&title=Ready)](https://waffle.io/brandonio21/PyCFramework)
 PyCFramework
 ============
-PyCFramework is a framework for managing programming competitions writter in
-Python. Originally, this project was simply a rigirous refactoring of its BASH
-counterpart [PCFramework](https://github.com/brandonio21/PCFramework). However,
-it has evolved into a full-fledged application and is currently being used to
-manage the quarterly Beginner's Programming Competition hosted by Women in 
-Computing at University of California, San Diego.
+PyCFramework is a framework for managing programming competitions written in
+Python3. It is currently used to manage the quarterly Beginner's Programming
+Competition hosted by Women In Computing at University of California, San Diego.
 
 Purpose
 -------
@@ -30,7 +26,14 @@ easier for the creaters of the competition.
 	solutions, they need to verify that their solutions are correct. These
 	solutions prove that the question is solvable.
 
-2. Managing Cases
+2. Generating Templates
+
+  Templates are an important part of a programming competition, as they allow
+  the contestants to only think about one part of the program and solve only
+  based on the relevant input/output. PyCFramework handles the generation of
+  these templates.
+
+3. Managing Cases
 
 	PyCFramework handles test cases to test solutions against with its
 	"cases" functionality. Test cases are created in JSON format and are
@@ -39,7 +42,7 @@ easier for the creaters of the competition.
 	solution is correct. These cases are the same cases that the contestants
 	will use during the competition. 
 
-3. Testing Solutions
+4. Testing Solutions
 
 	PyCFramework's primary feature is the testing of solutions. This means
 	running user-written solutions against provided cases in order to 
@@ -48,14 +51,14 @@ easier for the creaters of the competition.
 	probably be used), but is perfect for managing solutions written by the
 	committee members.
 
-4. Managing Solution Writers
+5. Managing Solution Writers
 
 	Of course, with a large committee full of many people writing solutions,
 	there needs to be a way to manage the people writing the solutions. 
 	PyCFramework takes care of this by allowing the adding and removal of
 	solution writers, as well as assigning certain problems to certain users.
 
-5. Managing Allowed Languages
+6. Managing Allowed Languages
 
 	The contestants are surely only allowed to use certain languages to
 	develop their solutions. Thus, the committee members should only
@@ -66,16 +69,16 @@ easier for the creaters of the competition.
 
 Installation
 ------------
-PyCFramework can easily be installed by cloning this git repository. Nothing
-else to it!
-
+```
+git clone --recurse-submodules https://github.com/ucsd-wic-bpc/PyCFramework
+```
 
 
 Running
 -------
 The executable for this project is found in Solutions/dev/runner.py. This file
 should be the only file that is executed and should contain all the necessary
-functionality. The script is separated into three modes of functionality:
+functionality. The script is separated into four modes of functionality:
 
 #### ./runner.py writers ####
 Manages all the writers in the competition. This module allows you to
@@ -87,6 +90,9 @@ Manages the testing of solutions written for the competition.
 #### ./runner.py package ####
 Manages the packaging of cases for importation into a programming
 competition platform.
+
+#### ./runner.py template ####
+Generates templates for problems based on a data-file and cases
 
 More information about these can be viewed inside their respective sources
 (found in Solutions/dev/util/subparsers) or in the wiki.
