@@ -4,7 +4,7 @@
 	 "sample_case_type"         : "sample",
 	 "corner_case_type"         : "corner",
 	 "generated_case_type"      : "general",
-         "case_naming"              : "problem{problem}_{caseType}",
+   "case_naming"              : "problem{problem}_{caseType}",
 	 "input_file_ending"        : "in",
 	 "output_file_ending"       : "out",
 	 "writers_directory"        : ".writers",
@@ -12,5 +12,6 @@
 	 "solution_naming"          : "Problem{problem}",
 	 "output_naming"            : "problem{problem}_{caseType}_{language}",
 	 "problem_count"            : 15,
-         "complete_threshold"       : 2
+   "complete_threshold"       : 2,
+   "template_data_directory"  : "data"
 }

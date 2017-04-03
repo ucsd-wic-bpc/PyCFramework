@@ -13,6 +13,9 @@ from util.subparsers.subparsers import writersedit as writersEditSubparser
 from util.subparsers.subparsers import writersdelete as writersDelSubparser
 from util.subparsers.subparsers import writersassign as writersAssignSubparser
 
+from util.subparsers.subparsers import writerslist as writersListSubparser
+from util.subparsers.subparsers import writerstodo as writersTodoSubparser
+
 SUBPARSER_KEYWORD = 'writers'
 
 def operate(args):

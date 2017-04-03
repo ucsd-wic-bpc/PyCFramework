@@ -43,6 +43,12 @@ class Language:
     def __eq__(self, other):
         return self.name == self.other
 
+    def get_extension(self):
+        if not self._compileExtension is None:
+            return self._compileExtension
+        else:
+            return self._runExtension
+
     @classmethod
     def load_from_dict(cls, languageBlockDict: dict):
         """
