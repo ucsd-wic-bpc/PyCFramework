@@ -115,20 +115,29 @@ def generate_template_for_case_collection(cases: list, language: list,
         data_folder, "problem{}.json".format(problem)
     )
 
-    template_data = get_json_dict(datafile_path)
-    arg_names = template_data["args"]
-    method_name = template_data["method"]
-    class_name = 'Problem{}'.format(problem)
-
-    arguments = [(arg_names[name_index], input_type) for
-                 name_index, input_type in enumerate(inputTypes)]
-
     stubber = stubber_factory_map[language.name](
         jsonfastparse_path='util/templating/jsonstubber/jsonfastparse',
         unifiedstr_path='util/templating/jsonstubber/unifiedstr'
     )
+
+    template_data = get_json_dict(datafile_path)
+    arg_names = template_data["args"]
+    method_name = template_data["method"]
+    class_name = 'Problem{}'.format(problem)
+    userimpl_header = stubber.make_comment_string(template_data["header"])
+
+    do_not_edit_str = [
+"------------------------------ DO NOT EDIT BELOW THIS LINE ------------------"
+                      ]
+    userimpl_footer = stubber.make_comment_string(do_not_edit_str)
+
+    arguments = [(arg_names[name_index], input_type) for
+                 name_index, input_type in enumerate(inputTypes)]
+
     template = stubber.make_stub(
-        class_name, method_name, outputType, arguments
+        class_name, method_name, outputType, arguments,
+        user_impl_header=userimpl_header,
+        user_impl_footer=userimpl_footer
     )
 
     template_path = join_path(outputPath, 'Problem{}.{}'.format(
