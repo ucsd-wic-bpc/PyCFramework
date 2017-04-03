@@ -16,6 +16,7 @@ from util.pcargparse import PCArgParseFactory
 from util.subparsers import writers as writersSubparser
 from util.subparsers import test as testSubparser
 from util.subparsers import package as packageSubparser
+from util.subparsers import validate as validateSubparser
 
 def parse_arguments(arguments, output=sys.stdout):
     argParser = PCArgParseFactory.get_argument_parser(output)
@@ -35,6 +36,7 @@ def parse_arguments(arguments, output=sys.stdout):
     writersSubparser.add_to_subparser_object(subparsers, baseParser)
     testSubparser.add_to_subparser_object(subparsers, baseParser)
     packageSubparser.add_to_subparser_object(subparsers, baseParser)
+    validateSubparser.add_to_subparser_object(subparsers, baseParser)
 
     if len(arguments) == 0:
         argParser.print_help()
@@ -42,14 +44,18 @@ def parse_arguments(arguments, output=sys.stdout):
     else:
         try:
             args = argParser.parse_args(arguments)
+
+            if args.help:
+                argParser.print_help()
+                return None
+
             if args.func:
                 args.func(args)
-        except Exception as e: 
+
+        except Exception as e:
             print(str(e))
-            return None 
-        if args.help:
-            argParser.print_help()
             return None
+
 
         return args
 
