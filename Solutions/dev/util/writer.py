@@ -308,7 +308,7 @@ class Writers:
         for writerName in cls.writers:
             writer = Writer.load_from_folder(writerName)
             if writer is None:
-                raise PyCException('Error: Writer {} does not have a folder'.format(path))
+                raise PyCException('Error: Writer {} does not have a folder'.format(writerName))
             else:
                 writerList.append(writer)
 
